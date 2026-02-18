@@ -88,18 +88,13 @@
         .card { 
             background: var(--card-bg); border-radius: 15px; padding: 15px; margin-bottom: 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05); position: relative;
+            transition: 0.3s;
         }
 
-        /* Стили для архива добрых слов */
         .message-card {
             background: var(--card-bg); padding: 12px; border-radius: 15px;
             margin-bottom: 10px; border-bottom: 3px solid var(--accent);
-            animation: slideUp 0.3s ease;
         }
-        .message-time { font-size: 9px; color: var(--text-sub); margin-bottom: 5px; }
-        .message-text { font-size: 14px; line-height: 1.4; }
-
-        @keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         #calendar-container { background: var(--card-bg); padding: 10px; border-radius: 20px; width: 100%; }
 
@@ -108,7 +103,7 @@
             padding: 5px; border-radius: 15px; gap: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             z-index: 1000; width: 92%; max-width: 380px;
         }
-        .nav-item { flex: 1; padding: 10px 5px; border-radius: 10px; cursor: pointer; font-weight: 800; color: var(--text-sub); font-size: 9px; text-align: center; transition: 0.2s; }
+        .nav-item { flex: 1; padding: 10px 5px; border-radius: 10px; cursor: pointer; font-weight: 800; color: var(--text-sub); font-size: 9px; text-align: center; }
         .nav-item.active { background: var(--accent); color: white; }
     </style>
 </head>
@@ -192,27 +187,22 @@
         });
 
         function listenData() {
-            // Слушаем задачи
             db.ref('tasks').on('value', (s) => {
                 const tasks = Object.entries(s.val() || {}).map(([key, val]) => ({...val, firebaseKey: key}));
                 updateUI(tasks);
                 updateCalendar(tasks);
             });
-            // Слушаем заметки
             db.ref('notes').on('value', (s) => { document.getElementById('personalNotes').value = s.val() || ""; });
-            // Слушаем обнимашки
             db.ref('hug').on('value', (s) => {
                 const d = s.val();
                 if (d && d.timestamp > Date.now() - 3000) showHugEffect();
             });
-            // Слушаем архив сообщений
             db.ref('archive').on('value', (s) => {
                 const msgs = Object.values(s.val() || {}).reverse();
                 renderArchive(msgs);
             });
         }
 
-        // Функция отправки доброй записки
         function sendMessage() {
             const input = document.getElementById('msgInput');
             if (input.value.trim()) {
@@ -229,8 +219,8 @@
             const list = document.getElementById('messagesList');
             list.innerHTML = msgs.map(m => `
                 <div class="message-card">
-                    <div class="message-time">${m.time}</div>
-                    <div class="message-text">${m.text}</div>
+                    <div style="font-size: 9px; color: var(--text-sub); margin-bottom: 5px;">${m.time}</div>
+                    <div style="font-size: 14px; line-height: 1.4;">${m.text}</div>
                 </div>
             `).join('');
         }
@@ -257,14 +247,9 @@
         function updateUI(tasks) {
             const list = document.getElementById('taskList');
             list.innerHTML = '';
-            const today = new Date().setHours(0,0,0,0);
-
             tasks.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(t => {
-                const tDate = new Date(t.date).setHours(0,0,0,0);
-                const diff = Math.ceil((tDate - today) / 86400000);
-                const isUrgent = diff <= 3;
                 const card = document.createElement('div');
-                card.className = `card ${isUrgent ? 'urgent' : 'normal'} date-group-${t.date}`;
+                card.className = `card date-group-${t.date}`;
                 card.innerHTML = `
                     <span style="position:absolute;top:10px;right:10px;cursor:pointer;font-size:20px;color:#dfe6e9" onclick="removeTask('${t.firebaseKey}')">✓</span>
                     <h3 style="margin:0; font-size:0.95em;">${t.name}</h3>
@@ -274,16 +259,36 @@
         }
 
         function initCalendar() {
-            calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-                initialView: 'dayGridMonth', locale: 'ru', firstDay: 1, height: 'auto',
+            const calendarEl = document.getElementById('calendar');
+            // В FullCalendar 6 Global Bundle клик работает автоматически, но 
+            // важно убедиться, что DOM готов.
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'ru',
+                firstDay: 1,
+                height: 'auto',
                 headerToolbar: { left: 'prev', center: 'title', right: 'next' },
+                // Этот параметр КРИТИЧЕСКИ важен для реакции на клик
+                navLinks: true, 
                 dateClick: function(info) {
-                    switchTab('list', document.getElementById('nav-list'));
+                    console.log("Клик по дате: " + info.dateStr); // Для отладки
+                    
+                    // 1. Переключаем вкладку на "ПЛАНЫ"
+                    const navPlans = document.getElementById('nav-list');
+                    switchTab('list', navPlans);
+                    
+                    // 2. Устанавливаем дату в инпут
                     document.getElementById('taskDate').value = info.dateStr;
+                    
+                    // 3. Скроллим к задачам этой даты
                     setTimeout(() => {
                         const target = document.querySelector(`.date-group-${info.dateStr}`);
-                        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 100);
+                        if (target) {
+                            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            target.style.boxShadow = "0 0 20px #6c5ce7";
+                            setTimeout(() => target.style.boxShadow = "", 2000);
+                        }
+                    }, 150);
                 }
             });
             calendar.render();
@@ -294,7 +299,15 @@
             const counts = {};
             tasks.forEach(t => { counts[t.date] = (counts[t.date] || 0) + 1; });
             Object.keys(counts).forEach(date => {
-                calendar.addEvent({ start: date, title: `• ${counts[date]}`, display: 'block', backgroundColor: 'transparent', borderColor: 'transparent', textColor: '#6c5ce7', allDay: true });
+                calendar.addEvent({ 
+                    start: date, 
+                    title: `• ${counts[date]}`, 
+                    display: 'block', 
+                    backgroundColor: 'transparent', 
+                    borderColor: 'transparent', 
+                    textColor: '#6c5ce7', 
+                    allDay: true 
+                });
             });
         }
 
@@ -303,7 +316,12 @@
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById('tab-' + name).classList.add('active');
             el.classList.add('active');
-            if(name === 'calendar') setTimeout(() => { calendar.updateSize(); }, 50);
+            if(name === 'calendar') {
+                setTimeout(() => { 
+                    calendar.updateSize();
+                    calendar.render(); // Перерисовываем принудительно
+                }, 50);
+            }
         }
 
         function toggleTheme() {
