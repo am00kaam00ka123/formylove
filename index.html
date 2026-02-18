@@ -29,6 +29,18 @@
         .header-text { text-align: center; }
         .header-text h2 { font-size: 1em; color: white; font-weight: 800; }
         .header-text p { font-size: 0.75em; color: white; opacity: 0.8; margin-top: 4px; }
+        
+        /* Всплывашка любви */
+        #hug-alert {
+            position: fixed; top: 100px; left: 50%; transform: translateX(-50%);
+            background: var(--danger); color: white; padding: 10px 20px;
+            border-radius: 20px; font-weight: 800; font-size: 14px;
+            z-index: 3000; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: popIn 0.3s ease;
+        }
+
+        @keyframes popIn { from { opacity: 0; transform: translateX(-50%) scale(0.8); } to { opacity: 1; transform: translateX(-50%) scale(1); } }
+
         .quick-links { display: flex; gap: 10px; margin-bottom: 20px; }
         .link-chip { flex: 1; background: var(--glass); color: white; text-decoration: none; padding: 12px; border-radius: 12px; font-size: 10px; font-weight: 800; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
         .input-group { background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); width: 100%; }
@@ -49,12 +61,15 @@
     </style>
 </head>
 <body data-theme="dark">
+    <div id="hug-alert">Котичка, я тебя люблю! ❤️</div>
+    
     <div class="container">
         <div class="top-bar">
             <button class="icon-btn" onclick="sendHug()">🤗</button>
             <div class="header-text"><h2>Для моей самой лучшей ❤️</h2><p>Самая умная, мой грибочек 🥰</p></div>
             <button class="icon-btn" onclick="toggleTheme()">🌓</button>
         </div>
+        
         <div class="quick-links">
             <a href="https://els.surgpu.ru/my/" target="_blank" class="link-chip">🎓 ПОРТАЛ</a>
             <a href="https://surgpu.fliptable.ru/timetables/6952/groups/b-3171u--3" target="_blank" class="link-chip">📅 РАСПИСАНИЕ</a>
@@ -68,7 +83,7 @@
             <div id="taskList"></div>
         </div>
         <div id="tab-calendar" class="tab-content">
-            <div style="background: var(--card-bg); border-radius: 20px; padding: 10px; color: #000;">
+            <div style="background: var(--card-bg); border-radius: 20px; padding: 10px;">
                 <div id="calendar"></div>
             </div>
             <div id="dayDetail" style="display:none;">
@@ -78,7 +93,7 @@
                 </div>
                 <div id="dayTasksList" style="margin-bottom: 15px;"></div>
                 <div class="input-group" style="margin-bottom: 0; padding: 10px; background: rgba(0,0,0,0.1);">
-                    <input type="text" id="quickTaskName" placeholder="Новое дело на этот день..." style="margin-bottom: 10px;">
+                    <input type="text" id="quickTaskName" placeholder="Новое дело на этот день...">
                     <button class="action-btn" style="padding: 12px;" onclick="saveTask('quick')">Добавить</button>
                 </div>
             </div>
@@ -94,12 +109,14 @@
             <textarea id="personalNotes" placeholder="Твои мысли, солнышко..." style="height: 400px; background: var(--glass); color: white; width:100%; border-radius:20px; padding:20px; border:none;" oninput="syncNotes()"></textarea>
         </div>
     </div>
+
     <div class="nav-bar">
         <div class="nav-item active" onclick="switchTab('list', this)">ПЛАНЫ</div>
         <div class="nav-item" onclick="switchTab('calendar', this)">КАЛЕНДАРЬ</div>
         <div class="nav-item" onclick="switchTab('archive', this)">ЗАПИСКИ</div>
         <div class="nav-item" onclick="switchTab('notes', this)">МЫСЛИ</div>
     </div>
+
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyCY3UwViVWCdIyv7vhWCXFr5CSQaagLY-c", authDomain: "for-my-love-dccfc.firebaseapp.com",
@@ -125,7 +142,6 @@
             db.ref('tasks').on('value', s => {
                 allTasks = Object.entries(s.val() || {}).map(([key, val]) => ({...val, firebaseKey: key}));
                 updateUI(); updateCalendarMarkers();
-                if(selectedDate) renderDayDetail(selectedDate);
             });
             db.ref('notes').on('value', s => { document.getElementById('personalNotes').value = s.val() || ""; });
             db.ref('archive').on('value', s => { renderArchive(Object.values(s.val() || {}).reverse()); });
@@ -147,7 +163,6 @@
                 dateClick: info => {
                     selectedDate = info.dateStr;
                     renderDayDetail(info.dateStr);
-                    document.getElementById('dayDetail').scrollIntoView({ behavior: 'smooth' });
                 }
             });
             calendar.render();
@@ -195,7 +210,7 @@
         }
 
         function renderArchive(msgs) {
-            document.getElementById('messagesList').innerHTML = msgs.map(m => `<div style="background:var(--card-bg); padding:15px; border-radius:15px; margin-bottom:10px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);"><div style="font-size:14px; margin-bottom:8px; line-height:1.4;">${m.text}</div><div style="font-size:10px; color:var(--text-sub); text-align:right;">${m.time || ''}</div></div>`).join('');
+            document.getElementById('messagesList').innerHTML = msgs.map(m => `<div style="background:var(--card-bg); padding:15px; border-radius:15px; margin-bottom:10px;"><div style="font-size:14px; margin-bottom:8px;">${m.text}</div><div style="font-size:10px; color:var(--text-sub); text-align:right;">${m.time || ''}</div></div>`).join('');
         }
 
         function toggleTheme() {
@@ -204,7 +219,13 @@
             b.setAttribute('data-theme', theme); localStorage.setItem('theme', theme);
         }
         function syncNotes() { db.ref('notes').set(document.getElementById('personalNotes').value); }
-        function sendHug() { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); }
+
+        function sendHug() {
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            const alert = document.getElementById('hug-alert');
+            alert.style.display = 'block';
+            setTimeout(() => { alert.style.display = 'none'; }, 2000);
+        }
     </script>
 </body>
 </html>
