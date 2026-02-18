@@ -42,11 +42,17 @@
             min-height: 100vh; margin: 0; padding: 0;
             display: flex; flex-direction: column; align-items: center;
             transition: 0.3s; color: var(--text-main); overflow-x: hidden;
+            width: 100vw;
         }
 
-        .container { width: 100%; max-width: 400px; padding: 15px; padding-bottom: 110px; }
+        .container { 
+            width: 100%; 
+            max-width: 400px; 
+            padding: 10px; 
+            padding-bottom: 110px;
+        }
 
-        .top-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px; padding: 0 5px; }
 
         .icon-btn {
             background: var(--glass); border: 1px solid rgba(255,255,255,0.3);
@@ -55,26 +61,46 @@
             font-size: 1.2em; backdrop-filter: blur(5px);
         }
 
+        /* Кнопки ссылок */
+        .quick-links {
+            display: flex; gap: 8px; justify-content: center; margin-bottom: 20px;
+        }
+        .link-chip {
+            background: var(--glass);
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(5px);
+            transition: 0.2s;
+        }
+        .link-chip:active { transform: scale(0.95); background: rgba(255,255,255,0.4); }
+
+        #calendar-container { 
+            background: var(--card-bg); 
+            padding: 8px; 
+            border-radius: 20px; 
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .fc { font-size: 0.85em; }
         .fc-toolbar-title { white-space: nowrap !important; font-size: 1.1em !important; font-weight: 800; }
 
         .tab-content { display: none; width: 100%; }
         .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
 
-        /* Стиль для списка дел внутри календаря */
         #dayDetail {
-            display: none;
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 20px;
-            margin-top: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            animation: slideUp 0.3s ease;
+            display: none; background: var(--card-bg); border-radius: 20px;
+            padding: 15px; margin-top: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            animation: slideUp 0.3s ease; width: 100%;
         }
 
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        .detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .detail-title { font-weight: 800; font-size: 14px; color: var(--accent); }
 
         .input-group {
             background: var(--glass); backdrop-filter: blur(10px); padding: 15px;
@@ -91,20 +117,14 @@
             border-radius: 12px; font-weight: 800; cursor: pointer; font-family: inherit;
         }
 
-        .card { 
-            background: var(--card-bg); border-radius: 15px; padding: 15px; margin-bottom: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05); position: relative;
-            border: 1px solid rgba(0,0,0,0.03);
-        }
-
-        #calendar-container { background: var(--card-bg); padding: 10px; border-radius: 20px; width: 100%; }
+        .card { background: var(--card-bg); border-radius: 12px; padding: 12px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); position: relative; }
 
         .nav-bar {
             position: fixed; bottom: 15px; display: flex; background: var(--nav-bg);
             padding: 5px; border-radius: 15px; gap: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             z-index: 1000; width: 92%; max-width: 380px;
         }
-        .nav-item { flex: 1; padding: 12px 5px; border-radius: 10px; cursor: pointer; font-weight: 800; color: var(--text-sub); font-size: 10px; text-align: center; }
+        .nav-item { flex: 1; padding: 12px 2px; border-radius: 10px; cursor: pointer; font-weight: 800; color: var(--text-sub); font-size: 9px; text-align: center; }
         .nav-item.active { background: var(--accent); color: white; }
 
         #hug-overlay {
@@ -128,9 +148,14 @@
             <button class="icon-btn" onclick="toggleTheme()">🌓</button>
         </div>
 
-        <div class="header">
-            <h1>Для моей самой лучшей ❤️</h1>
-            <p id="quoteDisplay" style="font-size: 0.8em; margin-top: 8px; color: white; opacity: 0.9; text-align: center;"></p>
+        <div class="header" style="text-align: center; color: white; margin-bottom: 15px;">
+            <h1 style="font-size: 1.2em; margin: 0; font-weight: 800;">Для моей самой лучшей ❤️</h1>
+            <p id="quoteDisplay" style="font-size: 0.8em; margin-top: 8px; opacity: 0.9;"></p>
+        </div>
+
+        <div class="quick-links">
+            <a href="https://els.surgpu.ru/my/" target="_blank" class="link-chip">🎓 Портал СурГПУ</a>
+            <a href="https://surgpu.fliptable.ru" target="_blank" class="link-chip">📅 Расписание</a>
         </div>
 
         <div id="tab-list" class="tab-content active">
@@ -143,19 +168,16 @@
         </div>
 
         <div id="tab-calendar" class="tab-content">
-            <div id="calendar-container">
-                <div id="calendar"></div>
-            </div>
-
+            <div id="calendar-container"><div id="calendar"></div></div>
             <div id="dayDetail">
-                <div class="detail-header">
-                    <div class="detail-title" id="detailDateLabel">Дела на сегодня</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div style="font-weight: 800; font-size: 13px; color: var(--accent);" id="detailDateLabel"></div>
                     <div style="cursor:pointer; font-size: 18px;" onclick="closeDayDetail()">✕</div>
                 </div>
-                <div id="dayTasksList" style="margin-bottom: 15px;"></div>
-                <div style="border-top: 1px dashed #ddd; pt: 15px; margin-top: 10px;">
-                    <input type="text" id="quickTaskName" placeholder="Добавить дело на этот день..." style="background: #f1f2f6; margin-top: 10px;">
-                    <button class="action-btn" style="padding: 10px; font-size: 12px;" onclick="saveTask('quick')">Добавить</button>
+                <div id="dayTasksList" style="margin-bottom: 12px;"></div>
+                <div style="border-top: 1px dashed #ddd; padding-top: 12px;">
+                    <input type="text" id="quickTaskName" placeholder="Новое дело на этот день..." style="background: #f1f2f6; border-radius: 8px;">
+                    <button class="action-btn" style="padding: 10px; font-size: 12px; margin-top: 5px;" onclick="saveTask('quick')">Добавить</button>
                 </div>
             </div>
         </div>
@@ -231,7 +253,7 @@
                 initialView: 'dayGridMonth',
                 locale: 'ru',
                 firstDay: 1,
-                height: 'auto',
+                contentHeight: 'auto',
                 headerToolbar: { left: 'prev', center: 'title', right: 'next' },
                 dateClick: function(info) {
                     selectedDate = info.dateStr;
@@ -245,26 +267,16 @@
             const detailBox = document.getElementById('dayDetail');
             const list = document.getElementById('dayTasksList');
             const label = document.getElementById('detailDateLabel');
-            
             const tasksOnDay = allTasks.filter(t => t.date === date);
             label.innerText = `Дела на ${new Date(date).toLocaleDateString('ru', {day:'numeric', month:'long'})}`;
-            
             detailBox.style.display = 'block';
             list.innerHTML = tasksOnDay.length 
-                ? tasksOnDay.map(t => `
-                    <div class="card" style="margin-bottom: 5px; padding: 10px;">
-                        <span style="float:right; cursor:pointer;" onclick="removeTask('${t.firebaseKey}')">✓</span>
-                        <div style="font-size: 13px;">${t.name}</div>
-                    </div>`).join('')
+                ? tasksOnDay.map(t => `<div class="card" style="margin-bottom: 5px; padding: 10px;"><span style="float:right; cursor:pointer;" onclick="removeTask('${t.firebaseKey}')">✓</span><div style="font-size: 13px;">${t.name}</div></div>`).join('')
                 : '<div style="font-size: 12px; color: #999; text-align: center; padding: 10px;">На этот день планов нет ✨</div>';
-            
             detailBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
-        function closeDayDetail() {
-            document.getElementById('dayDetail').style.display = 'none';
-            selectedDate = "";
-        }
+        function closeDayDetail() { document.getElementById('dayDetail').style.display = 'none'; selectedDate = ""; }
 
         function saveTask(type) {
             let name, date;
@@ -275,15 +287,10 @@
                 name = document.getElementById('quickTaskName').value;
                 date = selectedDate;
             }
-
             if (name && date) {
                 db.ref('tasks').push({ name, date });
-                if(type === 'main') {
-                    document.getElementById('taskName').value = '';
-                    document.getElementById('taskDate').value = '';
-                } else {
-                    document.getElementById('quickTaskName').value = '';
-                }
+                if(type === 'main') { document.getElementById('taskName').value = ''; document.getElementById('taskDate').value = ''; }
+                else { document.getElementById('quickTaskName').value = ''; }
             }
         }
 
@@ -293,12 +300,8 @@
             const list = document.getElementById('taskList');
             list.innerHTML = '';
             allTasks.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(t => {
-                const card = document.createElement('div');
-                card.className = `card`;
-                card.innerHTML = `
-                    <span style="position:absolute;top:10px;right:10px;cursor:pointer;font-size:20px;color:#dfe6e9" onclick="removeTask('${t.firebaseKey}')">✓</span>
-                    <h3 style="margin:0; font-size:0.95em;">${t.name}</h3>
-                    <div style="font-size:11px;color:var(--text-sub);margin-top:4px;">📅 ${new Date(t.date).toLocaleDateString()}</div>`;
+                const card = document.createElement('div'); card.className = `card`;
+                card.innerHTML = `<span style="position:absolute;top:10px;right:10px;cursor:pointer;font-size:20px;color:#dfe6e9" onclick="removeTask('${t.firebaseKey}')">✓</span><h3 style="margin:0; font-size:0.95em;">${t.name}</h3><div style="font-size:11px;color:var(--text-sub);margin-top:4px;">📅 ${new Date(t.date).toLocaleDateString()}</div>`;
                 list.appendChild(card);
             });
         }
@@ -317,7 +320,7 @@
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById('tab-' + name).classList.add('active');
             el.classList.add('active');
-            if(name === 'calendar') setTimeout(() => { calendar.updateSize(); }, 150);
+            if(name === 'calendar') setTimeout(() => { calendar.updateSize(); }, 200);
         }
 
         function sendMessage() {
@@ -336,8 +339,7 @@
 
         function sendHug() { db.ref('hug').set({ timestamp: Date.now() }); }
         function showHugEffect() {
-            const o = document.getElementById('hug-overlay');
-            o.style.display = 'flex';
+            const o = document.getElementById('hug-overlay'); o.style.display = 'flex';
             confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
             setTimeout(() => { o.style.display = 'none'; }, 3000);
         }
