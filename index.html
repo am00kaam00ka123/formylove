@@ -16,6 +16,7 @@
         :root {
             --accent: #6c5ce7;
             --danger: #ff7675;
+            --warning: #fdcb6e;
             --success: #55efc4;
             --bg-gradient: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
             --glass: rgba(255, 255, 255, 0.2);
@@ -34,11 +35,7 @@
             --nav-bg: rgba(30, 39, 46, 0.95);
         }
 
-        * { 
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent; 
-            margin: 0; padding: 0; 
-        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
 
         body { 
             font-family: 'Montserrat', sans-serif; 
@@ -54,8 +51,6 @@
             max-width: 400px; 
             padding: 12px; 
             padding-bottom: 120px;
-            display: flex;
-            flex-direction: column;
         }
 
         /* Кнопки ссылок */
@@ -65,52 +60,38 @@
             padding: 10px 5px; border-radius: 12px; font-size: 9px; font-weight: 800;
             border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px);
             flex: 1; text-align: center; white-space: nowrap;
-            display: flex; align-items: center; justify-content: center;
         }
 
-        /* Исправление инпутов, которые вылетают */
+        /* Инпуты */
         .input-group {
             background: var(--glass); backdrop-filter: blur(10px); padding: 15px;
             border-radius: 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.2);
-            width: 100%;
         }
 
         input, textarea { 
-            width: 100% !important; 
-            max-width: 100% !important;
-            min-width: 0;
-            padding: 12px; 
-            margin-bottom: 10px; 
-            border-radius: 12px; 
-            border: none; 
-            font-family: inherit; 
-            font-size: 14px; 
-            outline: none;
-            -webkit-appearance: none; /* Убирает системные стили iOS */
+            width: 100% !important; max-width: 100% !important;
+            padding: 12px; margin-bottom: 10px; border-radius: 12px; border: none; 
+            font-family: inherit; font-size: 14px; outline: none; -webkit-appearance: none;
         }
 
-        /* Календарь */
-        #calendar-container { 
-            background: var(--card-bg); 
-            padding: 8px; 
-            border-radius: 20px; 
-            width: 100%;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        /* КАРТОЧКИ С ИНДИКАТОРАМИ СРОЧНОСТИ */
+        .card {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-left: 6px solid transparent; /* Место под индикатор */
+            transition: 0.2s;
         }
         
-        .fc { width: 100% !important; font-size: 0.8em; }
-        .fc-toolbar-title { font-size: 1.1em !important; font-weight: 800; }
-        .fc-daygrid-day-number { padding: 4px !important; }
-        
-        .event-dot {
-            width: 6px; height: 6px; background: var(--accent);
-            border-radius: 50%; margin: 2px auto 0;
-        }
+        /* Цвета индикаторов */
+        .urgency-today { border-left-color: var(--danger); }
+        .urgency-tomorrow { border-left-color: var(--warning); }
+        .urgency-future { border-left-color: var(--accent); }
 
-        .tab-content { display: none; width: 100%; }
-        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
-
+        /* Навигация */
         .nav-bar {
             position: fixed; bottom: 20px; display: flex; background: var(--nav-bg);
             padding: 6px; border-radius: 20px; gap: 5px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
@@ -122,22 +103,22 @@
         button.action-btn { 
             width: 100%; padding: 15px; background: #fdcb6e; border: none; 
             border-radius: 14px; font-weight: 800; cursor: pointer; font-family: inherit;
-            color: #2d3436;
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        /* Календарь фикс */
+        #calendar-container { background: var(--card-bg); padding: 8px; border-radius: 20px; width: 100%; overflow: hidden; }
+        .fc { width: 100% !important; font-size: 0.8em; }
+        .event-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; margin: 2px auto 0; }
     </style>
 </head>
 <body data-theme="dark">
 
     <div class="container">
-        <div class="top-bar">
-            <button class="icon-btn" onclick="sendHug()">🤗</button>
+        <div class="top-bar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; width:100%; padding: 10px 5px;">
+            <button class="icon-btn" style="background:var(--glass); border:none; color:white; padding:10px; border-radius:10px;" onclick="sendHug()">🤗</button>
             <h2 style="color: white; font-size: 1.1em; font-weight: 800;">Для моей самой лучшей ❤️</h2>
-            <button class="icon-btn" onclick="toggleTheme()">🌓</button>
+            <button class="icon-btn" style="background:var(--glass); border:none; color:white; padding:10px; border-radius:10px;" onclick="toggleTheme()">🌓</button>
         </div>
-
-        <p id="quoteDisplay" style="font-size: 0.85em; color: white; opacity: 0.9; text-align: center; margin-bottom: 20px; font-weight: 600;"></p>
 
         <div class="quick-links">
             <a href="https://els.surgpu.ru/my/" target="_blank" class="link-chip">🎓 ПОРТАЛ</a>
@@ -156,13 +137,7 @@
         <div id="tab-calendar" class="tab-content">
             <div id="calendar-container"><div id="calendar"></div></div>
             <div id="dayDetail" style="display:none; background: var(--card-bg); border-radius: 20px; padding: 15px; margin-top: 15px;">
-                <div style="display:flex; justify-content: space-between; margin-bottom: 10px;">
-                    <b id="detailDateLabel" style="color: var(--accent);"></b>
-                    <span onclick="this.parentElement.parentElement.style.display='none'" style="cursor:pointer">✕</span>
-                </div>
                 <div id="dayTasksList"></div>
-                <input type="text" id="quickTaskName" placeholder="Новое дело..." style="margin-top:10px; background:#f1f2f6;">
-                <button class="action-btn" style="padding:10px;" onclick="saveTask('quick')">Добавить</button>
             </div>
         </div>
 
@@ -175,7 +150,7 @@
         </div>
 
         <div id="tab-notes" class="tab-content">
-            <textarea id="personalNotes" placeholder="Твои мысли, солнышко..." style="height: 350px; background: var(--glass); color: white; padding: 20px; border: 1px solid rgba(255,255,255,0.1);" oninput="syncNotes()"></textarea>
+            <textarea id="personalNotes" placeholder="Твои мысли, солнышко..." style="height: 350px; background: var(--glass); color: white; width:100%; border-radius:20px; padding:20px; border:none;" oninput="syncNotes()"></textarea>
         </div>
     </div>
 
@@ -202,7 +177,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             initCalendar();
             listenData();
-            document.getElementById('quoteDisplay').innerText = "Самая умная, мой грибочек 🥰";
             if(localStorage.getItem('theme') === 'light') toggleTheme();
         });
 
@@ -213,6 +187,28 @@
             });
             db.ref('notes').on('value', s => { document.getElementById('personalNotes').value = s.val() || ""; });
             db.ref('archive').on('value', s => { renderArchive(Object.values(s.val() || {}).reverse()); });
+        }
+
+        function getUrgencyClass(taskDate) {
+            const today = new Date().toISOString().split('T')[0];
+            const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+            if (taskDate === today) return 'urgency-today';
+            if (taskDate === tomorrowStr) return 'urgency-tomorrow';
+            return 'urgency-future';
+        }
+
+        function updateUI() {
+            const list = document.getElementById('taskList'); list.innerHTML = '';
+            allTasks.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(t => {
+                const urgency = getUrgencyClass(t.date);
+                list.innerHTML += `<div class="card ${urgency}">
+                    <div style="font-weight:800; font-size:1em; margin-bottom:5px;">${t.name}</div>
+                    <div style="font-size:11px; color:var(--text-sub);">📅 ${new Date(t.date).toLocaleDateString('ru')}</div>
+                    <span onclick="removeTask('${t.firebaseKey}')" style="position:absolute; top:15px; right:15px; cursor:pointer; font-size:1.2em;">✅</span>
+                </div>`;
+            });
         }
 
         function initCalendar() {
@@ -241,8 +237,7 @@
             const box = document.getElementById('dayDetail');
             const tasks = allTasks.filter(t => t.date === date);
             box.style.display = 'block';
-            document.getElementById('detailDateLabel').innerText = date;
-            document.getElementById('dayTasksList').innerHTML = tasks.map(t => `<div style="padding:8px; border-bottom:1px solid #eee;">${t.name} <span onclick="removeTask('${t.firebaseKey}')" style="float:right; color:red;">✕</span></div>`).join('');
+            document.getElementById('dayTasksList').innerHTML = `<b>${date}</b>` + tasks.map(t => `<div style="padding:10px; border-bottom:1px solid #eee;">${t.name}</div>`).join('');
         }
 
         function saveTask(type) {
@@ -252,16 +247,6 @@
         }
 
         function removeTask(key) { db.ref('tasks/' + key).remove(); }
-
-        function updateUI() {
-            const list = document.getElementById('taskList'); list.innerHTML = '';
-            allTasks.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(t => {
-                list.innerHTML += `<div class="card" style="background:var(--card-bg); padding:15px; border-radius:15px; margin-bottom:10px;">
-                    <b>${t.name}</b><br><small>${t.date}</small>
-                    <span onclick="removeTask('${t.firebaseKey}')" style="float:right; cursor:pointer;">✅</span>
-                </div>`;
-            });
-        }
 
         function switchTab(name, el) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
