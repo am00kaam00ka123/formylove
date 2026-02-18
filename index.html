@@ -19,7 +19,7 @@
             --warning: #fdcb6e;
             --success: #55efc4;
             --bg-gradient: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
-            --glass: rgba(255, 255, 255, 0.2);
+            --glass: rgba(255, 255, 255, 0.15);
             --card-bg: #ffffff;
             --text-main: #2d3436;
             --text-sub: #636e72;
@@ -27,12 +27,11 @@
         }
 
         [data-theme="dark"] {
-            --bg-gradient: linear-gradient(135deg, #2d3436 0%, #000000 100%);
-            --glass: rgba(255, 255, 255, 0.1);
+            --bg-gradient: linear-gradient(135deg, #1e272e 0%, #000000 100%);
             --card-bg: #1e272e;
             --text-main: #f5f6fa;
             --text-sub: #dcdde1;
-            --nav-bg: rgba(30, 39, 46, 0.95);
+            --nav-bg: rgba(30, 39, 46, 0.98);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
@@ -42,81 +41,83 @@
             background: var(--bg-gradient); 
             min-height: 100vh;
             display: flex; flex-direction: column; align-items: center;
-            transition: 0.3s; color: var(--text-main); 
-            overflow-x: hidden; width: 100vw;
+            color: var(--text-main); overflow-x: hidden; width: 100%;
         }
 
         .container { 
-            width: 100%; 
-            max-width: 400px; 
-            padding: 12px; 
-            padding-bottom: 120px;
+            width: 100%; max-width: 390px; 
+            padding: 15px; padding-bottom: 120px;
         }
 
         /* Исправленная шапка */
         .top-bar { 
-            display: grid;
-            grid-template-columns: 45px 1fr 45px;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            padding: 10px 5px;
-            width: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+            width: 100%; margin-bottom: 15px; padding: 10px 0;
         }
 
         .icon-btn {
-            background: var(--glass); border: 1px solid rgba(255,255,255,0.3);
-            color: white; width: 42px; height: 42px; border-radius: 12px;
+            background: var(--glass); border: 1px solid rgba(255,255,255,0.2);
+            color: white; width: 44px; height: 44px; border-radius: 14px;
             cursor: pointer; display: flex; align-items: center; justify-content: center;
-            font-size: 1.2em; backdrop-filter: blur(5px);
+            font-size: 1.3em; backdrop-filter: blur(10px);
         }
 
-        .quick-links { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; width: 100%; }
+        .header-text { text-align: center; flex: 1; }
+        .header-text h2 { font-size: 1em; color: white; font-weight: 800; margin-bottom: 4px; }
+        .header-text p { font-size: 0.75em; color: white; opacity: 0.9; }
+
+        /* Ссылки */
+        .quick-links { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .link-chip {
             background: var(--glass); color: white; text-decoration: none;
-            padding: 10px 5px; border-radius: 12px; font-size: 9px; font-weight: 800;
-            border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px);
-            flex: 1; text-align: center; white-space: nowrap;
+            padding: 12px; border-radius: 12px; font-size: 10px; font-weight: 800;
+            border: 1px solid rgba(255,255,255,0.2); text-align: center; backdrop-filter: blur(5px);
         }
 
+        /* Инпуты - фикс вылетания */
         .input-group {
-            background: var(--glass); backdrop-filter: blur(10px); padding: 15px;
+            background: var(--glass); backdrop-filter: blur(15px); padding: 15px;
             border-radius: 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.2);
+            width: 100%; overflow: hidden;
         }
 
         input, textarea { 
-            width: 100% !important; padding: 12px; margin-bottom: 10px; 
+            width: 100% !important; max-width: 100%; padding: 14px; margin-bottom: 10px; 
             border-radius: 12px; border: none; font-family: inherit; font-size: 14px; outline: none;
+            display: block;
         }
 
+        /* Карточки задач */
         .card {
-            background: var(--card-bg); padding: 15px; border-radius: 15px;
-            margin-bottom: 10px; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            border-left: 6px solid transparent; transition: 0.2s;
+            background: var(--card-bg); padding: 16px; border-radius: 18px;
+            margin-bottom: 12px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 6px solid transparent; overflow: hidden;
         }
         
         .urgency-today { border-left-color: var(--danger); }
         .urgency-tomorrow { border-left-color: var(--warning); }
         .urgency-future { border-left-color: var(--accent); }
 
+        .task-title { font-weight: 800; font-size: 1.05em; margin-bottom: 6px; padding-right: 30px; }
+        .task-date { font-size: 0.85em; color: var(--text-sub); font-weight: 600; display: flex; align-items: center; gap: 4px; }
+
+        /* Навигация */
         .nav-bar {
-            position: fixed; bottom: 20px; display: flex; background: var(--nav-bg);
-            padding: 6px; border-radius: 20px; gap: 5px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            z-index: 2000; width: 92%; max-width: 380px; left: 50%; transform: translateX(-50%);
+            position: fixed; bottom: 25px; display: flex; background: var(--nav-bg);
+            padding: 6px; border-radius: 22px; gap: 5px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 2000; width: 92%; max-width: 370px; left: 50%; transform: translateX(-50%);
         }
-        .nav-item { flex: 1; padding: 12px 2px; border-radius: 15px; cursor: pointer; font-weight: 800; color: var(--text-sub); font-size: 9px; text-align: center; }
+        .nav-item { flex: 1; padding: 14px 2px; border-radius: 18px; cursor: pointer; font-weight: 800; color: var(--text-sub); font-size: 9px; text-align: center; }
         .nav-item.active { background: var(--accent); color: white; }
 
         button.action-btn { 
-            width: 100%; padding: 15px; background: #fdcb6e; border: none; 
-            border-radius: 14px; font-weight: 800; cursor: pointer; font-family: inherit;
+            width: 100%; padding: 15px; background: var(--warning); border: none; 
+            border-radius: 14px; font-weight: 800; cursor: pointer; font-family: inherit; color: #2d3436;
         }
 
-        #calendar-container { background: var(--card-bg); padding: 8px; border-radius: 20px; width: 100%; overflow: hidden; }
-        .fc { width: 100% !important; font-size: 0.8em; }
-        .tab-content { display: none; width: 100%; }
-        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .tab-content { display: none; width: 100%; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body data-theme="dark">
@@ -124,9 +125,9 @@
     <div class="container">
         <div class="top-bar">
             <button class="icon-btn" onclick="sendHug()">🤗</button>
-            <div style="text-align: center; color: white;">
-                <h2 style="font-size: 0.9em; font-weight: 800; white-space: nowrap;">Для моей самой лучшей ❤️</h2>
-                <p style="font-size: 0.7em; opacity: 0.9;">Самая умная, мой грибочек 🥰</p>
+            <div class="header-text">
+                <h2>Для моей самой лучшей ❤️</h2>
+                <p>Самая умная, мой грибочек 🥰</p>
             </div>
             <button class="icon-btn" onclick="toggleTheme()">🌓</button>
         </div>
@@ -140,36 +141,35 @@
             <div class="input-group">
                 <input type="text" id="taskName" placeholder="Что сделать, котичка?">
                 <input type="date" id="taskDate">
-                <button class="action-btn" onclick="saveTask('main')">Добавить в общий список</button>
+                <button class="action-btn" onclick="saveTask()">Добавить в общий список</button>
             </div>
             <div id="taskList"></div>
         </div>
 
         <div id="tab-calendar" class="tab-content">
-            <div id="calendar-container"><div id="calendar"></div></div>
-            <div id="dayDetail" style="display:none; background: var(--card-bg); border-radius: 20px; padding: 15px; margin-top: 15px;">
-                <div id="dayTasksList"></div>
+            <div id="calendar-container" style="background: var(--card-bg); border-radius: 20px; padding: 10px;">
+                <div id="calendar"></div>
             </div>
         </div>
 
         <div id="tab-archive" class="tab-content">
             <div class="input-group">
-                <textarea id="msgInput" placeholder="Напиши что-то приятное..." style="height: 80px;"></textarea>
+                <textarea id="msgInput" placeholder="Напиши что-то приятное..." style="height: 80px; resize: none;"></textarea>
                 <button class="action-btn" style="background: var(--success);" onclick="sendMessage()">Оставить записку ✨</button>
             </div>
             <div id="messagesList"></div>
         </div>
 
         <div id="tab-notes" class="tab-content">
-            <textarea id="personalNotes" placeholder="Твои мысли, солнышко..." style="height: 350px; background: var(--glass); color: white; width:100%; border-radius:20px; padding:20px; border:none;" oninput="syncNotes()"></textarea>
+            <textarea id="personalNotes" placeholder="Твои мысли, солнышко..." style="height: 400px; background: var(--glass); color: white; width:100%; border-radius:20px; padding:20px; border:none; outline:none;" oninput="syncNotes()"></textarea>
         </div>
     </div>
 
     <div class="nav-bar">
-        <div class="nav-item active" id="nav-list" onclick="switchTab('list', this)">ПЛАНЫ</div>
-        <div class="nav-item" id="nav-calendar" onclick="switchTab('calendar', this)">КАЛЕНДАРЬ</div>
-        <div class="nav-item" id="nav-archive" onclick="switchTab('archive', this)">ЗАПИСКИ</div>
-        <div class="nav-item" id="nav-notes" onclick="switchTab('notes', this)">МЫСЛИ</div>
+        <div class="nav-item active" onclick="switchTab('list', this)">ПЛАНЫ</div>
+        <div class="nav-item" onclick="switchTab('calendar', this)">КАЛЕНДАРЬ</div>
+        <div class="nav-item" onclick="switchTab('archive', this)">ЗАПИСКИ</div>
+        <div class="nav-item" onclick="switchTab('notes', this)">МЫСЛИ</div>
     </div>
 
     <script>
@@ -183,63 +183,57 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        let calendar, selectedDate = "", allTasks = [];
+        let calendar, allTasks = [];
 
         document.addEventListener('DOMContentLoaded', () => {
             initCalendar();
             listenData();
-            if(localStorage.getItem('theme') === 'light') toggleTheme();
+            if(localStorage.getItem('theme') === 'light') document.body.setAttribute('data-theme', 'light');
         });
 
         function listenData() {
             db.ref('tasks').on('value', s => {
                 allTasks = Object.entries(s.val() || {}).map(([key, val]) => ({...val, firebaseKey: key}));
-                updateUI(); updateCalendar();
+                updateUI();
             });
             db.ref('notes').on('value', s => { document.getElementById('personalNotes').value = s.val() || ""; });
             db.ref('archive').on('value', s => { renderArchive(Object.values(s.val() || {}).reverse()); });
         }
 
-        function getUrgencyClass(taskDate) {
+        function formatDisplayDate(dateStr) {
+            const date = new Date(dateStr);
+            const options = { day: 'numeric', month: 'long', weekday: 'long' };
+            return date.toLocaleDateString('ru-RU', options);
+        }
+
+        function getUrgency(dateStr) {
             const today = new Date().toISOString().split('T')[0];
             const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
-            const tomorrowStr = tomorrow.toISOString().split('T')[0];
-            if (taskDate === today) return 'urgency-today';
-            if (taskDate === tomorrowStr) return 'urgency-tomorrow';
+            const tomStr = tomorrow.toISOString().split('T')[0];
+            if (dateStr === today) return 'urgency-today';
+            if (dateStr === tomStr) return 'urgency-tomorrow';
             return 'urgency-future';
         }
 
         function updateUI() {
-            const list = document.getElementById('taskList'); list.innerHTML = '';
+            const list = document.getElementById('taskList');
+            list.innerHTML = '';
             allTasks.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(t => {
-                list.innerHTML += `<div class="card ${getUrgencyClass(t.date)}">
-                    <div style="font-weight:800;">${t.name}</div>
-                    <div style="font-size:10px; color:var(--text-sub);">📅 ${t.date}</div>
-                    <span onclick="removeTask('${t.firebaseKey}')" style="position:absolute; top:15px; right:15px; cursor:pointer;">✅</span>
-                </div>`;
+                list.innerHTML += `
+                    <div class="card ${getUrgency(t.date)}">
+                        <div class="task-title">${t.name}</div>
+                        <div class="task-date">📅 ${formatDisplayDate(t.date)}</div>
+                        <span onclick="removeTask('${t.firebaseKey}')" style="position:absolute; top:18px; right:15px; cursor:pointer; font-size:1.4em;">✅</span>
+                    </div>`;
             });
         }
 
         function initCalendar() {
             calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                 initialView: 'dayGridMonth', locale: 'ru', firstDay: 1, contentHeight: 'auto',
-                headerToolbar: { left: 'prev', center: 'title', right: 'next' },
-                dateClick: info => { selectedDate = info.dateStr; renderDayDetail(info.dateStr); }
+                headerToolbar: { left: 'prev', center: 'title', right: 'next' }
             });
             calendar.render();
-        }
-
-        function updateCalendar() {
-            calendar.removeAllEvents();
-            allTasks.forEach(t => { calendar.addEvent({start: t.date, display: 'background', color: '#6c5ce755'}); });
-        }
-
-        function renderDayDetail(date) {
-            const box = document.getElementById('dayDetail');
-            const tasks = allTasks.filter(t => t.date === date);
-            box.style.display = 'block';
-            box.innerHTML = `<h3 style="margin-bottom:10px; font-size:14px;">${date}</h3>` + 
-                (tasks.length ? tasks.map(t => `<div style="padding:5px 0;">• ${t.name}</div>`).join('') : 'Нет дел');
         }
 
         function saveTask() {
@@ -259,26 +253,25 @@
         function sendMessage() {
             const i = document.getElementById('msgInput');
             if(i.value) { 
-                db.ref('archive').push({
-                    text: i.value, 
-                    time: new Date().toLocaleString('ru', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'})
-                }); 
+                const now = new Date().toLocaleString('ru', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+                db.ref('archive').push({ text: i.value, time: now }); 
                 i.value = ''; confetti(); 
             }
         }
 
         function renderArchive(msgs) {
             document.getElementById('messagesList').innerHTML = msgs.map(m => `
-                <div style="background:var(--card-bg); padding:12px; border-radius:12px; margin-bottom:8px;">
-                    <div style="font-size:14px; margin-bottom:4px;">${m.text}</div>
-                    <div style="font-size:9px; color:var(--text-sub); text-align:right;">${m.time || ''}</div>
+                <div style="background:var(--card-bg); padding:15px; border-radius:15px; margin-bottom:10px; position:relative;">
+                    <div style="font-size:14px; line-height:1.5; margin-bottom:8px;">${m.text}</div>
+                    <div style="font-size:10px; color:var(--text-sub); text-align:right; font-weight:600;">${m.time || ''}</div>
                 </div>`).join('');
         }
 
         function toggleTheme() {
             const b = document.body;
             const theme = b.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            b.setAttribute('data-theme', theme); localStorage.setItem('theme', theme);
+            b.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
         }
         function syncNotes() { db.ref('notes').set(document.getElementById('personalNotes').value); }
         function sendHug() { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); }
