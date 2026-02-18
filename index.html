@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Твой Учебный Хаб ✨</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
@@ -22,9 +22,7 @@
             --card-bg: #ffffff;
             --text-main: #2d3436;
             --text-sub: #636e72;
-            --input-bg: #ffffff;
             --nav-bg: rgba(255, 255, 255, 0.9);
-            --cal-today: rgba(108, 92, 231, 0.15);
         }
 
         [data-theme="dark"] {
@@ -33,110 +31,120 @@
             --card-bg: #1e272e;
             --text-main: #f5f6fa;
             --text-sub: #dcdde1;
-            --input-bg: #2f3640;
             --nav-bg: rgba(30, 39, 46, 0.9);
-            --cal-today: rgba(255, 255, 255, 0.1);
         }
 
         body { 
             font-family: 'Montserrat', sans-serif; 
             background: var(--bg-gradient); 
-            min-height: 100vh; margin: 0; display: flex; flex-direction: column; align-items: center; padding-bottom: 100px;
-            transition: background 0.3s ease;
-            color: var(--text-main);
+            min-height: 100vh; margin: 0; display: flex; flex-direction: column; align-items: center; padding-bottom: 90px;
+            transition: 0.3s; color: var(--text-main); overflow-x: hidden;
         }
 
-        .container { width: 100%; max-width: 450px; padding: 20px; box-sizing: border-box; }
+        .container { width: 100%; max-width: 420px; padding: 15px; box-sizing: border-box; }
+
+        /* Компактные кнопки управления */
+        .hug-btn {
+            position: absolute; top: 15px; left: 15px;
+            background: #ff7675; border: none; color: white;
+            padding: 8px 12px; border-radius: 15px; font-weight: 800;
+            cursor: pointer; font-size: 0.65em; z-index: 1001;
+        }
 
         .theme-toggle {
-            position: absolute; top: 20px; right: 20px;
+            position: absolute; top: 15px; right: 15px;
             background: var(--glass); border: 1px solid rgba(255,255,255,0.3);
-            color: white; padding: 10px; border-radius: 50%; cursor: pointer;
-            width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;
-            backdrop-filter: blur(10px); z-index: 1001;
+            color: white; width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; z-index: 1001; font-size: 1em;
         }
 
-        .quick-links { display: flex; gap: 10px; margin-bottom: 25px; width: 100%; margin-top: 40px; }
+        #hug-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 118, 117, 0.3); backdrop-filter: blur(8px);
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 9999; animation: heartFade 2.5s ease-in-out forwards;
+        }
+        @keyframes heartFade { 0% { opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
+
+        .quick-links { display: flex; gap: 8px; margin-bottom: 20px; margin-top: 45px; }
         .link-btn {
-            flex: 1; background: var(--glass); backdrop-filter: blur(10px);
-            text-decoration: none; color: white; padding: 12px; border-radius: 15px;
-            font-size: 0.75em; text-align: center; border: 1px solid rgba(255,255,255,0.3);
-            transition: 0.3s; font-weight: 600;
+            flex: 1; background: var(--glass); text-decoration: none; color: white; 
+            padding: 10px; border-radius: 12px; font-size: 0.65em; text-align: center;
+            border: 1px solid rgba(255,255,255,0.3); font-weight: 800; letter-spacing: 0.5px;
         }
 
-        .header { text-align: center; color: white; margin-bottom: 30px; }
-        .header h1 { margin: 0; font-size: 1.6em; font-weight: 800; }
-        #quoteDisplay { font-size: 0.9em; opacity: 0.9; margin-top: 10px; font-weight: 400; font-style: italic; }
+        .header { text-align: center; color: white; margin-bottom: 20px; }
+        .header h1 { font-size: 1.3em; font-weight: 800; margin: 0; line-height: 1.2; }
+        #quoteDisplay { font-size: 0.8em; font-style: italic; margin-top: 8px; opacity: 0.9; padding: 0 10px; }
 
-        .tab-content { display: none; width: 100%; animation: fadeIn 0.4s ease; }
-        .tab-content.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .tab-content { display: none; width: 100%; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; } }
 
-        .input-group, .notes-group {
-            background: var(--glass); backdrop-filter: blur(15px); border-radius: 25px; 
-            border: 1px solid rgba(255,255,255,0.3); padding: 20px; margin-bottom: 20px;
+        .notes-container {
+            position: relative; border-radius: 20px; overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
         }
-
-        input, textarea {
-            width: 100%; padding: 14px; margin: 8px 0; border: none;
-            border-radius: 15px; background: var(--input-bg); color: var(--text-main); 
-            font-family: 'Montserrat', sans-serif; font-size: 15px; outline: none;
+        .notes-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&q=80&w=500') center/cover;
+            filter: brightness(0.5); z-index: 1;
         }
-        
-        button#addBtn {
-            width: 100%; background: #fdcb6e; color: #2d3436; border: none;
-            padding: 16px; border-radius: 15px; cursor: pointer; font-weight: 800; margin-top: 10px;
+        textarea#personalNotes {
+            position: relative; z-index: 2; width: 100%; height: 300px;
+            background: transparent; color: white; border: none; padding: 20px;
+            font-size: 15px; line-height: 1.5; font-family: inherit; outline: none; box-sizing: border-box;
         }
 
         .card { 
-            background: var(--card-bg); border-radius: 20px; padding: 18px; margin-bottom: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08); position: relative; border-left: 6px solid #fdcb6e;
+            background: var(--card-bg); border-radius: 15px; padding: 15px; margin-bottom: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05); position: relative; border-left: 5px solid #fdcb6e;
         }
+        .card h3 { margin: 0; font-size: 0.95em; font-weight: 800; padding-right: 25px; }
 
-        /* --- УЛУЧШЕННЫЙ КАЛЕНДАРЬ --- */
-        #calendar-container { 
-            background: var(--card-bg); padding: 15px; border-radius: 30px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
-        }
-        .fc { --fc-border-color: transparent; font-family: 'Montserrat', sans-serif; }
-        .fc .fc-toolbar-title { font-weight: 800; color: var(--accent); text-transform: capitalize; }
-        .fc .fc-col-header-cell { font-size: 0.7em; color: var(--text-sub); font-weight: 800; padding-bottom: 10px; }
-        .fc .fc-daygrid-day-number { font-weight: 600; font-size: 0.9em; color: var(--text-main); padding: 8px; }
-        .fc .fc-day-today { background: var(--cal-today) !important; border-radius: 12px; position: relative; }
-        .fc .fc-day-today::after { 
-            content: ''; position: absolute; top: 5px; right: 5px; width: 6px; height: 6px; 
-            background: var(--accent); border-radius: 50%; 
-        }
-        .fc .fc-daygrid-event { border-radius: 6px; font-size: 0.7em; font-weight: 600; padding: 2px 6px; border: none !important; }
+        /* Оптимизация календаря */
+        #calendar-container { background: var(--card-bg); padding: 10px; border-radius: 20px; }
+        .fc .fc-toolbar-title { font-size: 1em !important; font-weight: 800; color: var(--accent); }
+        .fc .fc-button { padding: 4px 8px !important; font-size: 0.8em !important; }
+        .fc .fc-col-header-cell { font-size: 0.65em !important; }
+        .fc .fc-daygrid-day-number { font-size: 0.8em; padding: 4px !important; }
 
         .nav-bar {
-            position: fixed; bottom: 25px; display: flex; background: var(--nav-bg);
-            backdrop-filter: blur(10px); padding: 6px; border-radius: 20px; gap: 5px;
+            position: fixed; bottom: 20px; display: flex; background: var(--nav-bg);
+            backdrop-filter: blur(10px); padding: 5px; border-radius: 18px; gap: 4px; box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
-        .nav-item { padding: 12px 18px; border-radius: 15px; cursor: pointer; font-weight: 800; color: var(--text-sub); font-size: 0.8em; }
+        .nav-item { padding: 10px 14px; border-radius: 14px; cursor: pointer; font-weight: 800; color: var(--text-sub); font-size: 0.7em; }
         .nav-item.active { background: var(--accent); color: white; }
     </style>
 </head>
 <body data-theme="light">
 
+    <div id="hug-overlay">
+        <div style="font-size: 60px;">❤️</div>
+        <h2 style="color: white; text-align: center; font-weight: 800; margin-top: 15px; font-size: 1.2em; padding: 0 20px;">
+            КОТИЧКА,<br>ТЕБЯ ОБНЯЛИ!
+        </h2>
+    </div>
+
+    <button class="hug-btn" onclick="sendHug()">ОБНЯТЬ 🤗</button>
     <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
 
     <div class="container">
         <div class="quick-links">
-            <a href="https://els.surgpu.ru" target="_blank" class="link-btn">🏠 ПОРТАЛ</a>
-            <a href="https://surgpu.ru/raspisanie/" target="_blank" class="link-btn">📅 ГРАФИК</a>
+            <a href="https://els.surgpu.ru" target="_blank" class="link-btn">ПОРТАЛ</a>
+            <a href="https://surgpu.ru/raspisanie/" target="_blank" class="link-btn">РАСПИСАНИЕ</a>
         </div>
 
         <div class="header">
-            <h1 id="greeting">Для моей самой лучшей ❤️</h1>
+            <h1>Для моей самой лучшей ❤️</h1>
             <p id="quoteDisplay"></p>
         </div>
 
         <div id="tab-list" class="tab-content active">
-            <div class="input-group">
-                <input type="text" id="taskName" placeholder="Что нужно сделать, котичка?">
-                <input type="date" id="taskDate">
-                <button id="addBtn" onclick="saveTask()">Добавить в план</button>
+            <div style="background: var(--glass); backdrop-filter: blur(15px); padding: 15px; border-radius: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.2);">
+                <input type="text" id="taskName" placeholder="Что сделать, котичка?" style="width:100%; padding:12px; border-radius:10px; border:none; margin-bottom:8px; font-family: inherit; font-size: 14px;">
+                <input type="date" id="taskDate" style="width:100%; padding:12px; border-radius:10px; border:none; margin-bottom:8px; font-family: inherit; font-size: 14px;">
+                <button onclick="saveTask()" style="width:100%; padding:14px; background:#fdcb6e; border:none; border-radius:12px; font-weight:800; cursor:pointer; font-family: inherit;">Добавить</button>
             </div>
             <div id="taskList"></div>
         </div>
@@ -146,7 +154,8 @@
         </div>
 
         <div id="tab-notes" class="tab-content">
-            <div class="notes-group">
+            <div class="notes-container">
+                <div class="notes-bg"></div>
                 <textarea id="personalNotes" placeholder="Твои мысли, солнышко..." oninput="syncNotes()"></textarea>
             </div>
         </div>
@@ -173,30 +182,14 @@
         const db = firebase.database();
         let calendar;
 
-        const MOTIVATION = [
-            "Ты всё успеешь, котичка! ✨", 
-            "Горжусь тобой, солнышко ❤️", 
-            "Самая умная, моя заичка 🥰", 
-            "Ты всё сможешь, котичка! 🏔️",
-            "Моё любимое солнышко справится! 👑",
-            "Милаяя, время покорять мир! 🚀"
-        ];
+        const MOTIVATION = ["Ты всё успеешь, котичка! ✨", "Горжусь тобой, солнышко ❤️", "Самая умная, мой грибочек 🥰"];
 
         document.addEventListener('DOMContentLoaded', () => {
             initCalendar();
             listenData();
             setRandomQuote();
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.body.setAttribute('data-theme', savedTheme);
+            if(localStorage.getItem('theme') === 'dark') document.body.setAttribute('data-theme', 'dark');
         });
-
-        function toggleTheme() {
-            const current = document.body.getAttribute('data-theme');
-            const next = current === 'light' ? 'dark' : 'light';
-            document.body.setAttribute('data-theme', next);
-            localStorage.setItem('theme', next);
-            calendar.render();
-        }
 
         function listenData() {
             db.ref('tasks').on('value', (snapshot) => {
@@ -208,34 +201,45 @@
             db.ref('notes').on('value', (snapshot) => {
                 document.getElementById('personalNotes').value = snapshot.val() || "";
             });
+            db.ref('hug').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data && data.timestamp > Date.now() - 5000) showHugEffect();
+            });
+        }
+
+        function sendHug() { db.ref('hug').set({ timestamp: Date.now() }); }
+
+        function showHugEffect() {
+            const overlay = document.getElementById('hug-overlay');
+            overlay.style.display = 'flex';
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            setTimeout(() => { overlay.style.display = 'none'; }, 2500);
         }
 
         function saveTask() {
             const n = document.getElementById('taskName'), d = document.getElementById('taskDate');
-            if (!n.value || !d.value) return;
-            db.ref('tasks').push({ id: Date.now(), name: n.value, date: d.value });
-            n.value = ''; d.value = '';
+            if (n.value && d.value) {
+                db.ref('tasks').push({ id: Date.now(), name: n.value, date: d.value });
+                n.value = ''; d.value = '';
+            }
         }
 
         function removeTask(key) {
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.7 } });
+            confetti({ particleCount: 80, spread: 50, origin: { y: 0.7 } });
             db.ref('tasks/' + key).remove();
         }
 
-        function syncNotes() {
-            db.ref('notes').set(document.getElementById('personalNotes').value);
-        }
+        function syncNotes() { db.ref('notes').set(document.getElementById('personalNotes').value); }
 
         function updateUI(tasks) {
             const list = document.getElementById('taskList');
             list.innerHTML = '';
             tasks.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(t => {
-                const diff = Math.ceil((new Date(t.date) - new Date()) / 86400000);
                 const card = document.createElement('div');
                 card.className = 'card';
-                card.innerHTML = `<span style="position:absolute;top:15px;right:15px;cursor:pointer;font-size:22px;color:#dfe6e9" onclick="removeTask('${t.firebaseKey}')">✓</span>
-                    <h3 style="margin:0;font-size:1.1em;color:var(--text-main)">${t.name}</h3>
-                    <div style="font-size:0.8em;color:var(--text-sub);margin-top:5px">📅 ${new Date(t.date).toLocaleDateString()}</div>`;
+                card.innerHTML = `<span style="position:absolute;top:12px;right:12px;cursor:pointer;font-size:20px;color:#dfe6e9" onclick="removeTask('${t.firebaseKey}')">✓</span>
+                    <h3>${t.name}</h3>
+                    <div style="font-size:0.7em;color:var(--text-sub);margin-top:3px">📅 ${new Date(t.date).toLocaleDateString()}</div>`;
                 list.appendChild(card);
             });
         }
@@ -244,7 +248,7 @@
             calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                 initialView: 'dayGridMonth', locale: 'ru', firstDay: 1, height: 'auto',
                 headerToolbar: { left: 'prev', center: 'title', right: 'next' },
-                dayMaxEvents: 2
+                dayMaxEvents: 1
             });
             calendar.render();
         }
@@ -260,6 +264,13 @@
             document.getElementById('tab-' + tabName).classList.add('active');
             el.classList.add('active');
             if(tabName === 'calendar') setTimeout(() => { calendar.updateSize(); calendar.render(); }, 100);
+        }
+
+        function toggleTheme() {
+            const mode = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', mode);
+            localStorage.setItem('theme', mode);
+            calendar.render();
         }
 
         function setRandomQuote() {
