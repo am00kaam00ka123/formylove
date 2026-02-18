@@ -52,28 +52,29 @@
             background: var(--glass); border: 1px solid rgba(255,255,255,0.3);
             color: white; width: 42px; height: 42px; border-radius: 12px;
             cursor: pointer; display: flex; align-items: center; justify-content: center;
-            font-size: 1.2em; backdrop-filter: blur(5px); transition: 0.2s;
+            font-size: 1.2em; backdrop-filter: blur(5px);
         }
 
-        /* Фикс для заезда года */
-        .fc-toolbar-title { 
-            white-space: nowrap !important; 
-            font-size: 1.1em !important; 
-            font-weight: 800; 
-        }
-
-        #hug-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(15px);
-            display: none; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 9999; text-align: center; padding: 20px;
-        }
-
-        .header { text-align: center; color: white; margin-bottom: 20px; }
-        .header h1 { font-size: 1.3em; margin: 0; font-weight: 800; }
+        .fc-toolbar-title { white-space: nowrap !important; font-size: 1.1em !important; font-weight: 800; }
 
         .tab-content { display: none; width: 100%; }
         .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+
+        /* Стиль для списка дел внутри календаря */
+        #dayDetail {
+            display: none;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .detail-title { font-weight: 800; font-size: 14px; color: var(--accent); }
 
         .input-group {
             background: var(--glass); backdrop-filter: blur(10px); padding: 15px;
@@ -93,6 +94,7 @@
         .card { 
             background: var(--card-bg); border-radius: 15px; padding: 15px; margin-bottom: 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05); position: relative;
+            border: 1px solid rgba(0,0,0,0.03);
         }
 
         #calendar-container { background: var(--card-bg); padding: 10px; border-radius: 20px; width: 100%; }
@@ -105,9 +107,11 @@
         .nav-item { flex: 1; padding: 12px 5px; border-radius: 10px; cursor: pointer; font-weight: 800; color: var(--text-sub); font-size: 10px; text-align: center; }
         .nav-item.active { background: var(--accent); color: white; }
 
-        .reset-date {
-            text-align: center; font-size: 11px; color: var(--accent);
-            margin-top: 10px; cursor: pointer; font-weight: 600; text-decoration: underline;
+        #hug-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(15px);
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 9999; text-align: center;
         }
     </style>
 </head>
@@ -115,7 +119,7 @@
 
     <div id="hug-overlay">
         <div style="font-size: 70px; margin-bottom: 20px;">❤️</div>
-        <h1 style="color: white; font-weight: 800; font-size: 22px; margin: 0; line-height: 1.4;">КОТИЧКА,<br>Я ТЕБЯ ЛЮБЛЮ!</h1>
+        <h1 style="color: white; font-weight: 800; font-size: 22px;">КОТИЧКА,<br>Я ТЕБЯ ЛЮБЛЮ!</h1>
     </div>
 
     <div class="container">
@@ -126,15 +130,14 @@
 
         <div class="header">
             <h1>Для моей самой лучшей ❤️</h1>
-            <p id="quoteDisplay" style="font-size: 0.8em; margin-top: 8px; color: white; opacity: 0.9;"></p>
+            <p id="quoteDisplay" style="font-size: 0.8em; margin-top: 8px; color: white; opacity: 0.9; text-align: center;"></p>
         </div>
 
         <div id="tab-list" class="tab-content active">
             <div class="input-group">
                 <input type="text" id="taskName" placeholder="Что сделать, котичка?">
                 <input type="date" id="taskDate">
-                <button class="action-btn" onclick="saveTask()">Добавить в план</button>
-                <div id="selectedDateLabel" style="display:none; font-size: 10px; margin-top: 8px; color: var(--accent);">Выбрана дата из календаря</div>
+                <button class="action-btn" onclick="saveTask('main')">Добавить в общий список</button>
             </div>
             <div id="taskList"></div>
         </div>
@@ -143,7 +146,18 @@
             <div id="calendar-container">
                 <div id="calendar"></div>
             </div>
-            <div class="reset-date" onclick="resetSelectedDate()">Сбросить выбор даты</div>
+
+            <div id="dayDetail">
+                <div class="detail-header">
+                    <div class="detail-title" id="detailDateLabel">Дела на сегодня</div>
+                    <div style="cursor:pointer; font-size: 18px;" onclick="closeDayDetail()">✕</div>
+                </div>
+                <div id="dayTasksList" style="margin-bottom: 15px;"></div>
+                <div style="border-top: 1px dashed #ddd; pt: 15px; margin-top: 10px;">
+                    <input type="text" id="quickTaskName" placeholder="Добавить дело на этот день..." style="background: #f1f2f6; margin-top: 10px;">
+                    <button class="action-btn" style="padding: 10px; font-size: 12px;" onclick="saveTask('quick')">Добавить</button>
+                </div>
+            </div>
         </div>
 
         <div id="tab-archive" class="tab-content">
@@ -182,6 +196,8 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         let calendar;
+        let selectedDate = "";
+        let allTasks = [];
 
         const MOTIVATION = ["Ты всё успеешь, котичка! ✨", "Горжусь тобой, солнышко ❤️", "Самая умная, мой грибочек 🥰"];
 
@@ -194,9 +210,10 @@
 
         function listenData() {
             db.ref('tasks').on('value', (s) => {
-                const tasks = Object.entries(s.val() || {}).map(([key, val]) => ({...val, firebaseKey: key}));
-                updateUI(tasks);
-                updateCalendar(tasks);
+                allTasks = Object.entries(s.val() || {}).map(([key, val]) => ({...val, firebaseKey: key}));
+                updateUI();
+                updateCalendar();
+                if(selectedDate) renderDayDetail(selectedDate);
             });
             db.ref('notes').on('value', (s) => { document.getElementById('personalNotes').value = s.val() || ""; });
             db.ref('hug').on('value', (s) => {
@@ -209,53 +226,6 @@
             });
         }
 
-        function sendMessage() {
-            const input = document.getElementById('msgInput');
-            if (input.value.trim()) {
-                db.ref('archive').push({
-                    text: input.value,
-                    time: new Date().toLocaleString('ru', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'})
-                });
-                input.value = '';
-                confetti({ particleCount: 40, spread: 30, origin: { y: 0.8 } });
-            }
-        }
-
-        function renderArchive(msgs) {
-            const list = document.getElementById('messagesList');
-            list.innerHTML = msgs.map(m => `
-                <div class="message-card">
-                    <div style="font-size: 9px; color: var(--text-sub); margin-bottom: 5px;">${m.time}</div>
-                    <div style="font-size: 14px; line-height: 1.4;">${m.text}</div>
-                </div>
-            `).join('');
-        }
-
-        function saveTask() {
-            const n = document.getElementById('taskName'), d = document.getElementById('taskDate');
-            if (n.value && d.value) {
-                db.ref('tasks').push({ name: n.value, date: d.value });
-                n.value = ''; d.value = '';
-                resetSelectedDate();
-            }
-        }
-
-        function removeTask(key) { db.ref('tasks/' + key).remove(); }
-
-        function updateUI(tasks) {
-            const list = document.getElementById('taskList');
-            list.innerHTML = '';
-            tasks.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(t => {
-                const card = document.createElement('div');
-                card.className = `card date-group-${t.date}`;
-                card.innerHTML = `
-                    <span style="position:absolute;top:10px;right:10px;cursor:pointer;font-size:20px;color:#dfe6e9" onclick="removeTask('${t.firebaseKey}')">✓</span>
-                    <h3 style="margin:0; font-size:0.95em;">${t.name}</h3>
-                    <div style="font-size:11px;color:var(--text-sub);margin-top:4px;">📅 ${new Date(t.date).toLocaleDateString()}</div>`;
-                list.appendChild(card);
-            });
-        }
-
         function initCalendar() {
             calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                 initialView: 'dayGridMonth',
@@ -264,46 +234,81 @@
                 height: 'auto',
                 headerToolbar: { left: 'prev', center: 'title', right: 'next' },
                 dateClick: function(info) {
-                    // Клик по дате: переход и подстановка
-                    document.getElementById('taskDate').value = info.dateStr;
-                    document.getElementById('selectedDateLabel').style.display = 'block';
-                    
-                    // Переключаем вкладку программно
-                    switchTab('list', document.getElementById('nav-list'));
-                    
-                    setTimeout(() => {
-                        const target = document.querySelector(`.date-group-${info.dateStr}`);
-                        if (target) {
-                            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            target.style.transition = "0.5s";
-                            target.style.boxShadow = "0 0 20px #6c5ce7";
-                            setTimeout(() => target.style.boxShadow = "", 2000);
-                        }
-                    }, 300);
+                    selectedDate = info.dateStr;
+                    renderDayDetail(info.dateStr);
                 }
             });
             calendar.render();
         }
 
-        function resetSelectedDate() {
-            document.getElementById('taskDate').value = "";
-            document.getElementById('selectedDateLabel').style.display = 'none';
+        function renderDayDetail(date) {
+            const detailBox = document.getElementById('dayDetail');
+            const list = document.getElementById('dayTasksList');
+            const label = document.getElementById('detailDateLabel');
+            
+            const tasksOnDay = allTasks.filter(t => t.date === date);
+            label.innerText = `Дела на ${new Date(date).toLocaleDateString('ru', {day:'numeric', month:'long'})}`;
+            
+            detailBox.style.display = 'block';
+            list.innerHTML = tasksOnDay.length 
+                ? tasksOnDay.map(t => `
+                    <div class="card" style="margin-bottom: 5px; padding: 10px;">
+                        <span style="float:right; cursor:pointer;" onclick="removeTask('${t.firebaseKey}')">✓</span>
+                        <div style="font-size: 13px;">${t.name}</div>
+                    </div>`).join('')
+                : '<div style="font-size: 12px; color: #999; text-align: center; padding: 10px;">На этот день планов нет ✨</div>';
+            
+            detailBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
-        function updateCalendar(tasks) {
+        function closeDayDetail() {
+            document.getElementById('dayDetail').style.display = 'none';
+            selectedDate = "";
+        }
+
+        function saveTask(type) {
+            let name, date;
+            if (type === 'main') {
+                name = document.getElementById('taskName').value;
+                date = document.getElementById('taskDate').value;
+            } else {
+                name = document.getElementById('quickTaskName').value;
+                date = selectedDate;
+            }
+
+            if (name && date) {
+                db.ref('tasks').push({ name, date });
+                if(type === 'main') {
+                    document.getElementById('taskName').value = '';
+                    document.getElementById('taskDate').value = '';
+                } else {
+                    document.getElementById('quickTaskName').value = '';
+                }
+            }
+        }
+
+        function removeTask(key) { db.ref('tasks/' + key).remove(); }
+
+        function updateUI() {
+            const list = document.getElementById('taskList');
+            list.innerHTML = '';
+            allTasks.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(t => {
+                const card = document.createElement('div');
+                card.className = `card`;
+                card.innerHTML = `
+                    <span style="position:absolute;top:10px;right:10px;cursor:pointer;font-size:20px;color:#dfe6e9" onclick="removeTask('${t.firebaseKey}')">✓</span>
+                    <h3 style="margin:0; font-size:0.95em;">${t.name}</h3>
+                    <div style="font-size:11px;color:var(--text-sub);margin-top:4px;">📅 ${new Date(t.date).toLocaleDateString()}</div>`;
+                list.appendChild(card);
+            });
+        }
+
+        function updateCalendar() {
             calendar.removeAllEvents();
             const counts = {};
-            tasks.forEach(t => { counts[t.date] = (counts[t.date] || 0) + 1; });
+            allTasks.forEach(t => { counts[t.date] = (counts[t.date] || 0) + 1; });
             Object.keys(counts).forEach(date => {
-                calendar.addEvent({ 
-                    start: date, 
-                    title: `• ${counts[date]}`, 
-                    display: 'block', 
-                    backgroundColor: 'transparent', 
-                    borderColor: 'transparent', 
-                    textColor: '#6c5ce7', 
-                    allDay: true 
-                });
+                calendar.addEvent({ start: date, title: `• ${counts[date]}`, display: 'block', backgroundColor: 'transparent', borderColor: 'transparent', textColor: '#6c5ce7', allDay: true });
             });
         }
 
@@ -312,9 +317,21 @@
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById('tab-' + name).classList.add('active');
             el.classList.add('active');
-            if(name === 'calendar') {
-                setTimeout(() => { calendar.updateSize(); }, 100);
+            if(name === 'calendar') setTimeout(() => { calendar.updateSize(); }, 150);
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('msgInput');
+            if (input.value.trim()) {
+                db.ref('archive').push({ text: input.value, time: new Date().toLocaleString('ru', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) });
+                input.value = '';
+                confetti({ particleCount: 40, spread: 30, origin: { y: 0.8 } });
             }
+        }
+
+        function renderArchive(msgs) {
+            const list = document.getElementById('messagesList');
+            list.innerHTML = msgs.map(m => `<div class="message-card" style="background:var(--card-bg); padding:12px; border-radius:15px; margin-bottom:10px; border-bottom:3px solid var(--accent);"><div style="font-size:9px; color:var(--text-sub); margin-bottom:5px;">${m.time}</div><div style="font-size:14px; line-height:1.4;">${m.text}</div></div>`).join('');
         }
 
         function sendHug() { db.ref('hug').set({ timestamp: Date.now() }); }
