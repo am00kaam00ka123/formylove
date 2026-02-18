@@ -45,28 +45,25 @@
 
         .container { width: 100%; max-width: 400px; padding: 15px; padding-bottom: 100px; }
 
-        /* Новая верхняя панель */
+        /* Компактная верхняя панель */
         .top-bar {
             display: flex; justify-content: space-between; align-items: center;
-            width: 100%; margin-bottom: 20px; gap: 10px;
+            width: 100%; margin-bottom: 20px;
         }
 
-        .hug-btn {
-            background: #ff7675; border: none; color: white;
-            padding: 10px 15px; border-radius: 15px; font-weight: 800;
-            cursor: pointer; font-size: 11px; flex-grow: 1;
-            box-shadow: 0 4px 10px rgba(255, 118, 117, 0.2);
-        }
-
-        .theme-toggle {
+        /* Одинаковые кнопки */
+        .icon-btn {
             background: var(--glass); border: 1px solid rgba(255,255,255,0.3);
-            color: white; width: 40px; height: 40px; border-radius: 12px;
+            color: white; width: 42px; height: 42px; border-radius: 12px;
             cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 1.2em; backdrop-filter: blur(5px); transition: 0.2s;
         }
+        .icon-btn:active { transform: scale(0.9); }
+        .hug-btn-small { background: rgba(255, 118, 117, 0.4); border-color: rgba(255,255,255,0.4); }
 
         #hug-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(15px);
             display: none; flex-direction: column; align-items: center; justify-content: center;
             z-index: 9999; text-align: center; padding: 20px;
         }
@@ -106,23 +103,19 @@
         }
 
         #calendar-container { background: var(--card-bg); padding: 10px; border-radius: 20px; width: 100%; }
-        .fc { max-width: 100%; }
         .fc .fc-toolbar-title { font-size: 14px !important; font-weight: 800; color: var(--accent); }
-        .fc .fc-button { font-size: 10px !important; }
 
+        /* Заметки БЕЗ фона */
         .notes-container {
-            position: relative; border-radius: 20px; overflow: hidden; height: 350px;
-        }
-        .notes-bg {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: url('https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&q=80&w=500') center/cover;
-            filter: brightness(0.4); z-index: 1;
+            background: var(--glass); border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px); border-radius: 20px; height: 350px;
         }
         textarea#personalNotes {
-            position: relative; z-index: 2; width: 100%; height: 100%;
-            background: transparent; color: white; border: none; padding: 20px;
+            width: 100%; height: 100%; background: transparent; 
+            color: var(--text-main); border: none; padding: 20px;
             font-size: 15px; font-family: inherit; outline: none; resize: none;
         }
+        [data-theme="dark"] textarea#personalNotes { color: white; }
 
         .nav-bar {
             position: fixed; bottom: 20px; display: flex; background: var(--nav-bg);
@@ -142,8 +135,8 @@
 
     <div class="container">
         <div class="top-bar">
-            <button class="hug-btn" onclick="sendHug()">ОБНЯТЬ 🤗</button>
-            <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+            <button class="icon-btn hug-btn-small" onclick="sendHug()">🤗</button>
+            <button class="icon-btn" onclick="toggleTheme()">🌓</button>
         </div>
 
         <div class="header">
@@ -173,8 +166,7 @@
 
         <div id="tab-notes" class="tab-content">
             <div class="notes-container">
-                <div class="notes-bg"></div>
-                <textarea id="personalNotes" placeholder="Пиши здесь, солнышко..." oninput="syncNotes()"></textarea>
+                <textarea id="personalNotes" placeholder="Твои секретные заметки здесь..." oninput="syncNotes()"></textarea>
             </div>
         </div>
     </div>
