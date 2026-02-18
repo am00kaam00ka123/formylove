@@ -9,9 +9,7 @@
     
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     
     <style>
@@ -57,7 +55,6 @@
             font-size: 1.2em; backdrop-filter: blur(5px); transition: 0.2s;
         }
         .icon-btn:active { transform: scale(0.9); }
-        .hug-btn-small { background: rgba(255, 118, 117, 0.4); }
 
         #hug-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -69,13 +66,6 @@
         .header { text-align: center; color: white; margin-bottom: 20px; }
         .header h1 { font-size: 1.3em; margin: 0; font-weight: 800; }
         #quoteDisplay { font-size: 0.8em; margin-top: 8px; opacity: 0.9; font-style: italic; }
-
-        .quick-links { display: flex; gap: 8px; margin-bottom: 20px; }
-        .link-btn {
-            flex: 1; background: var(--glass); text-decoration: none; color: white; 
-            padding: 10px; border-radius: 12px; font-size: 10px; text-align: center;
-            border: 1px solid rgba(255,255,255,0.2); font-weight: 800;
-        }
 
         .tab-content { display: none; width: 100%; }
         .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
@@ -99,29 +89,13 @@
         .card { 
             background: var(--card-bg); border-radius: 15px; padding: 15px; margin-bottom: 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05); position: relative;
+            transition: transform 0.3s, box-shadow 0.3s;
         }
         .card.urgent { border-left: 5px solid var(--danger); }
         .card.normal { border-left: 5px solid var(--success); }
 
-        .status-dot { font-size: 10px; font-weight: 800; display: inline-block; margin-top: 5px; padding: 2px 8px; border-radius: 20px; }
-        .status-dot.red { background: rgba(255, 118, 117, 0.1); color: var(--danger); }
-        .status-dot.green { background: rgba(85, 239, 196, 0.1); color: #00b894; }
-
         #calendar-container { background: var(--card-bg); padding: 10px; border-radius: 20px; width: 100%; }
-        .fc .fc-toolbar-title { font-size: 14px !important; font-weight: 800; color: var(--accent); }
-        .fc .fc-daygrid-day { cursor: pointer; }
-        .fc .fc-day-today { background: rgba(108, 92, 231, 0.05) !important; }
-
-        .notes-container {
-            background: var(--glass); border: 1px solid rgba(255,255,255,0.2);
-            backdrop-filter: blur(10px); border-radius: 20px; height: 300px;
-        }
-        textarea#personalNotes {
-            width: 100%; height: 100%; background: transparent; 
-            color: var(--text-main); border: none; padding: 20px;
-            font-size: 15px; font-family: inherit; outline: none; resize: none;
-        }
-
+        
         .nav-bar {
             position: fixed; bottom: 20px; display: flex; background: var(--nav-bg);
             padding: 5px; border-radius: 15px; gap: 5px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
@@ -129,6 +103,16 @@
         }
         .nav-item { padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: 800; color: var(--text-sub); font-size: 11px; }
         .nav-item.active { background: var(--accent); color: white; }
+
+        .notes-container {
+            background: var(--glass); border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px); border-radius: 20px; height: 350px;
+        }
+        textarea#personalNotes {
+            width: 100%; height: 100%; background: transparent; 
+            color: var(--text-main); border: none; padding: 20px;
+            font-size: 15px; font-family: inherit; outline: none; resize: none;
+        }
     </style>
 </head>
 <body data-theme="light">
@@ -140,18 +124,13 @@
 
     <div class="container">
         <div class="top-bar">
-            <button class="icon-btn hug-btn-small" onclick="sendHug()">🤗</button>
+            <button class="icon-btn" style="background: rgba(255,118,117,0.4)" onclick="sendHug()">🤗</button>
             <button class="icon-btn" onclick="toggleTheme()">🌓</button>
         </div>
 
         <div class="header">
             <h1>Для моей самой лучшей ❤️</h1>
             <p id="quoteDisplay"></p>
-        </div>
-
-        <div class="quick-links">
-            <a href="https://els.surgpu.ru" target="_blank" class="link-btn">ПОРТАЛ</a>
-            <a href="https://surgpu.ru/raspisanie/" target="_blank" class="link-btn">РАСПИСАНИЕ</a>
         </div>
 
         <div id="tab-list" class="tab-content active">
@@ -237,35 +216,31 @@
         }
 
         function removeTask(key) {
-            confetti({ particleCount: 50, spread: 50 });
             db.ref('tasks/' + key).remove();
         }
-
-        function syncNotes() { db.ref('notes').set(document.getElementById('personalNotes').value); }
 
         function updateUI(tasks) {
             const list = document.getElementById('taskList');
             list.innerHTML = '';
-            
-            // Получаем сегодняшнюю дату без времени для сравнения
-            const today = new Date();
-            today.setHours(0,0,0,0);
+            const today = new Date().setHours(0,0,0,0);
 
             tasks.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(t => {
-                const taskDate = new Date(t.date);
-                taskDate.setHours(0,0,0,0);
+                const tDate = new Date(t.date).setHours(0,0,0,0);
+                const diff = Math.ceil((tDate - today) / 86400000);
+                const isUrgent = diff <= 3;
                 
-                const diffTime = taskDate - today;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                
-                const isUrgent = diffDays <= 3;
                 const card = document.createElement('div');
                 card.className = `card ${isUrgent ? 'urgent' : 'normal'}`;
-                card.id = `task-${t.date}`;
-                card.innerHTML = `<span style="position:absolute;top:10px;right:10px;cursor:pointer;font-size:20px;color:#dfe6e9" onclick="removeTask('${t.firebaseKey}')">✓</span>
+                // ID для умного перехода (важно!)
+                card.id = `task-card-${t.date}`; 
+                
+                card.innerHTML = `
+                    <span style="position:absolute;top:10px;right:10px;cursor:pointer;font-size:20px;color:#dfe6e9" onclick="removeTask('${t.firebaseKey}')">✓</span>
                     <h3 style="margin:0; font-size:0.95em;">${t.name}</h3>
                     <div style="font-size:11px;color:var(--text-sub);margin-top:4px;">📅 ${new Date(t.date).toLocaleDateString()}</div>
-                    <div class="status-dot ${isUrgent ? 'red' : 'green'}">${isUrgent ? '🔥 Срочно' : '☕ Время есть'}</div>`;
+                    <div style="font-size:10px;font-weight:800;margin-top:5px;padding:2px 8px;border-radius:20px;display:inline-block;${isUrgent ? 'background:rgba(255,118,117,0.1);color:var(--danger)' : 'background:rgba(85,239,196,0.1);color:#00b894'}">
+                        ${isUrgent ? '🔥 Срочно' : '☕ Время есть'}
+                    </div>`;
                 list.appendChild(card);
             });
         }
@@ -278,12 +253,23 @@
                 firstDay: 1,
                 height: 'auto',
                 headerToolbar: { left: 'prev', center: 'title', right: 'next' },
-                // В 6 версии Global плагины подключать не нужно через plugins: []
                 dateClick: function(info) {
+                    // Умный переход
                     switchTab('list', document.getElementById('nav-list'));
                     document.getElementById('taskDate').value = info.dateStr;
-                    const target = document.getElementById(`task-${info.dateStr}`);
-                    if(target) target.scrollIntoView({ behavior: 'smooth' });
+                    
+                    setTimeout(() => {
+                        const target = document.getElementById(`task-card-${info.dateStr}`);
+                        if (target) {
+                            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            target.style.transform = "scale(1.05)";
+                            target.style.boxShadow = "0 0 20px rgba(108, 92, 231, 0.4)";
+                            setTimeout(() => {
+                                target.style.transform = "";
+                                target.style.boxShadow = "";
+                            }, 2000);
+                        }
+                    }, 100);
                 }
             });
             calendar.render();
@@ -291,7 +277,6 @@
 
         function updateCalendar(tasks) {
             calendar.removeAllEvents();
-            // Группируем задачи по датам, чтобы не плодить лишние точки
             const uniqueDates = [...new Set(tasks.map(t => t.date))];
             calendar.addEvents(uniqueDates.map(date => ({ 
                 start: date, 
@@ -307,9 +292,7 @@
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById('tab-' + name).classList.add('active');
             el.classList.add('active');
-            if(name === 'calendar') {
-                setTimeout(() => { calendar.updateSize(); }, 50);
-            }
+            if(name === 'calendar') setTimeout(() => { calendar.updateSize(); }, 50);
         }
 
         function toggleTheme() {
@@ -319,6 +302,7 @@
             if(calendar) calendar.render();
         }
 
+        function syncNotes() { db.ref('notes').set(document.getElementById('personalNotes').value); }
         function setRandomQuote() {
             document.getElementById('quoteDisplay').innerText = MOTIVATION[Math.floor(Math.random() * MOTIVATION.length)];
         }
