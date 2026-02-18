@@ -54,7 +54,6 @@
             cursor: pointer; display: flex; align-items: center; justify-content: center;
             font-size: 1.2em; backdrop-filter: blur(5px); transition: 0.2s;
         }
-        .icon-btn:active { transform: scale(0.9); }
 
         #hug-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -76,12 +75,12 @@
             border-radius: 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.2);
         }
 
-        input {
+        input, textarea {
             width: 100%; padding: 12px; margin-bottom: 8px; border-radius: 10px;
             border: none; font-family: inherit; font-size: 14px; outline: none;
         }
 
-        button#addBtn {
+        button.action-btn {
             width: 100%; padding: 14px; background: #fdcb6e; border: none;
             border-radius: 12px; font-weight: 800; cursor: pointer; font-family: inherit;
         }
@@ -89,30 +88,28 @@
         .card { 
             background: var(--card-bg); border-radius: 15px; padding: 15px; margin-bottom: 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05); position: relative;
-            transition: transform 0.3s, box-shadow 0.3s;
         }
-        .card.urgent { border-left: 5px solid var(--danger); }
-        .card.normal { border-left: 5px solid var(--success); }
+
+        /* Стили для архива добрых слов */
+        .message-card {
+            background: var(--card-bg); padding: 12px; border-radius: 15px;
+            margin-bottom: 10px; border-bottom: 3px solid var(--accent);
+            animation: slideUp 0.3s ease;
+        }
+        .message-time { font-size: 9px; color: var(--text-sub); margin-bottom: 5px; }
+        .message-text { font-size: 14px; line-height: 1.4; }
+
+        @keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         #calendar-container { background: var(--card-bg); padding: 10px; border-radius: 20px; width: 100%; }
-        
-        .nav-bar {
-            position: fixed; bottom: 20px; display: flex; background: var(--nav-bg);
-            padding: 5px; border-radius: 15px; gap: 5px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            z-index: 1000;
-        }
-        .nav-item { padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: 800; color: var(--text-sub); font-size: 11px; }
-        .nav-item.active { background: var(--accent); color: white; }
 
-        .notes-container {
-            background: var(--glass); border: 1px solid rgba(255,255,255,0.2);
-            backdrop-filter: blur(10px); border-radius: 20px; height: 350px;
+        .nav-bar {
+            position: fixed; bottom: 15px; display: flex; background: var(--nav-bg);
+            padding: 5px; border-radius: 15px; gap: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1000; width: 92%; max-width: 380px;
         }
-        textarea#personalNotes {
-            width: 100%; height: 100%; background: transparent; 
-            color: var(--text-main); border: none; padding: 20px;
-            font-size: 15px; font-family: inherit; outline: none; resize: none;
-        }
+        .nav-item { flex: 1; padding: 10px 5px; border-radius: 10px; cursor: pointer; font-weight: 800; color: var(--text-sub); font-size: 9px; text-align: center; transition: 0.2s; }
+        .nav-item.active { background: var(--accent); color: white; }
     </style>
 </head>
 <body data-theme="light">
@@ -137,7 +134,7 @@
             <div class="input-group">
                 <input type="text" id="taskName" placeholder="Что сделать, котичка?">
                 <input type="date" id="taskDate">
-                <button id="addBtn" onclick="saveTask()">Добавить в план</button>
+                <button class="action-btn" onclick="saveTask()">Добавить в план</button>
             </div>
             <div id="taskList"></div>
         </div>
@@ -148,17 +145,26 @@
             </div>
         </div>
 
+        <div id="tab-archive" class="tab-content">
+            <div class="input-group">
+                <textarea id="msgInput" placeholder="Напиши что-то приятное..." style="height: 60px; resize: none;"></textarea>
+                <button class="action-btn" style="background: var(--success); color: #1e272e" onclick="sendMessage()">Оставить записку ✨</button>
+            </div>
+            <div id="messagesList"></div>
+        </div>
+
         <div id="tab-notes" class="tab-content">
-            <div class="notes-container">
-                <textarea id="personalNotes" placeholder="Твои мысли, солнышко..." oninput="syncNotes()"></textarea>
+            <div style="background: var(--glass); border-radius: 20px; height: 350px; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px);">
+                <textarea id="personalNotes" placeholder="Твои мысли, солнышко..." style="height: 100%; background: transparent; color: var(--text-main); padding: 20px;" oninput="syncNotes()"></textarea>
             </div>
         </div>
     </div>
 
     <div class="nav-bar">
-        <div class="nav-item active" id="nav-list" onclick="switchTab('list', this)">СПИСОК</div>
+        <div class="nav-item active" id="nav-list" onclick="switchTab('list', this)">ПЛАНЫ</div>
         <div class="nav-item" id="nav-calendar" onclick="switchTab('calendar', this)">КАЛЕНДАРЬ</div>
-        <div class="nav-item" id="nav-notes" onclick="switchTab('notes', this)">ЗАМЕТКИ</div>
+        <div class="nav-item" id="nav-archive" onclick="switchTab('archive', this)">ЗАПИСКИ</div>
+        <div class="nav-item" id="nav-notes" onclick="switchTab('notes', this)">МЫСЛИ</div>
     </div>
 
     <script>
@@ -186,16 +192,47 @@
         });
 
         function listenData() {
+            // Слушаем задачи
             db.ref('tasks').on('value', (s) => {
                 const tasks = Object.entries(s.val() || {}).map(([key, val]) => ({...val, firebaseKey: key}));
                 updateUI(tasks);
                 updateCalendar(tasks);
             });
+            // Слушаем заметки
             db.ref('notes').on('value', (s) => { document.getElementById('personalNotes').value = s.val() || ""; });
+            // Слушаем обнимашки
             db.ref('hug').on('value', (s) => {
                 const d = s.val();
                 if (d && d.timestamp > Date.now() - 3000) showHugEffect();
             });
+            // Слушаем архив сообщений
+            db.ref('archive').on('value', (s) => {
+                const msgs = Object.values(s.val() || {}).reverse();
+                renderArchive(msgs);
+            });
+        }
+
+        // Функция отправки доброй записки
+        function sendMessage() {
+            const input = document.getElementById('msgInput');
+            if (input.value.trim()) {
+                db.ref('archive').push({
+                    text: input.value,
+                    time: new Date().toLocaleString('ru', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'})
+                });
+                input.value = '';
+                confetti({ particleCount: 40, spread: 30, origin: { y: 0.8 } });
+            }
+        }
+
+        function renderArchive(msgs) {
+            const list = document.getElementById('messagesList');
+            list.innerHTML = msgs.map(m => `
+                <div class="message-card">
+                    <div class="message-time">${m.time}</div>
+                    <div class="message-text">${m.text}</div>
+                </div>
+            `).join('');
         }
 
         function sendHug() { db.ref('hug').set({ timestamp: Date.now() }); }
@@ -215,9 +252,7 @@
             }
         }
 
-        function removeTask(key) {
-            db.ref('tasks/' + key).remove();
-        }
+        function removeTask(key) { db.ref('tasks/' + key).remove(); }
 
         function updateUI(tasks) {
             const list = document.getElementById('taskList');
@@ -228,47 +263,26 @@
                 const tDate = new Date(t.date).setHours(0,0,0,0);
                 const diff = Math.ceil((tDate - today) / 86400000);
                 const isUrgent = diff <= 3;
-                
                 const card = document.createElement('div');
-                card.className = `card ${isUrgent ? 'urgent' : 'normal'}`;
-                // ID для умного перехода (важно!)
-                card.id = `task-card-${t.date}`; 
-                
+                card.className = `card ${isUrgent ? 'urgent' : 'normal'} date-group-${t.date}`;
                 card.innerHTML = `
                     <span style="position:absolute;top:10px;right:10px;cursor:pointer;font-size:20px;color:#dfe6e9" onclick="removeTask('${t.firebaseKey}')">✓</span>
                     <h3 style="margin:0; font-size:0.95em;">${t.name}</h3>
-                    <div style="font-size:11px;color:var(--text-sub);margin-top:4px;">📅 ${new Date(t.date).toLocaleDateString()}</div>
-                    <div style="font-size:10px;font-weight:800;margin-top:5px;padding:2px 8px;border-radius:20px;display:inline-block;${isUrgent ? 'background:rgba(255,118,117,0.1);color:var(--danger)' : 'background:rgba(85,239,196,0.1);color:#00b894'}">
-                        ${isUrgent ? '🔥 Срочно' : '☕ Время есть'}
-                    </div>`;
+                    <div style="font-size:11px;color:var(--text-sub);margin-top:4px;">📅 ${new Date(t.date).toLocaleDateString()}</div>`;
                 list.appendChild(card);
             });
         }
 
         function initCalendar() {
-            const calendarEl = document.getElementById('calendar');
-            calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                locale: 'ru',
-                firstDay: 1,
-                height: 'auto',
+            calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+                initialView: 'dayGridMonth', locale: 'ru', firstDay: 1, height: 'auto',
                 headerToolbar: { left: 'prev', center: 'title', right: 'next' },
                 dateClick: function(info) {
-                    // Умный переход
                     switchTab('list', document.getElementById('nav-list'));
                     document.getElementById('taskDate').value = info.dateStr;
-                    
                     setTimeout(() => {
-                        const target = document.getElementById(`task-card-${info.dateStr}`);
-                        if (target) {
-                            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            target.style.transform = "scale(1.05)";
-                            target.style.boxShadow = "0 0 20px rgba(108, 92, 231, 0.4)";
-                            setTimeout(() => {
-                                target.style.transform = "";
-                                target.style.boxShadow = "";
-                            }, 2000);
-                        }
+                        const target = document.querySelector(`.date-group-${info.dateStr}`);
+                        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }, 100);
                 }
             });
@@ -277,14 +291,11 @@
 
         function updateCalendar(tasks) {
             calendar.removeAllEvents();
-            const uniqueDates = [...new Set(tasks.map(t => t.date))];
-            calendar.addEvents(uniqueDates.map(date => ({ 
-                start: date, 
-                display: 'block',
-                backgroundColor: '#6c5ce7',
-                borderColor: 'transparent',
-                allDay: true
-            })));
+            const counts = {};
+            tasks.forEach(t => { counts[t.date] = (counts[t.date] || 0) + 1; });
+            Object.keys(counts).forEach(date => {
+                calendar.addEvent({ start: date, title: `• ${counts[date]}`, display: 'block', backgroundColor: 'transparent', borderColor: 'transparent', textColor: '#6c5ce7', allDay: true });
+            });
         }
 
         function switchTab(name, el) {
@@ -303,9 +314,7 @@
         }
 
         function syncNotes() { db.ref('notes').set(document.getElementById('personalNotes').value); }
-        function setRandomQuote() {
-            document.getElementById('quoteDisplay').innerText = MOTIVATION[Math.floor(Math.random() * MOTIVATION.length)];
-        }
+        function setRandomQuote() { document.getElementById('quoteDisplay').innerText = MOTIVATION[Math.floor(Math.random() * MOTIVATION.length)]; }
     </script>
 </body>
 </html>
