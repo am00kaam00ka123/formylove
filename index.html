@@ -73,4 +73,255 @@
         .quick-links { display: flex; gap: 8px; margin-bottom: 20px; }
         .link-btn {
             flex: 1; background: var(--glass); text-decoration: none; color: white; 
-            padding: 10px; border-radius: 12px; font-size: 10
+            padding: 10px; border-radius: 12px; font-size: 10px; text-align: center;
+            border: 1px solid rgba(255,255,255,0.2); font-weight: 800;
+        }
+
+        .tab-content { display: none; width: 100%; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .input-group {
+            background: var(--glass); backdrop-filter: blur(10px); padding: 15px;
+            border-radius: 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        input {
+            width: 100%; padding: 12px; margin-bottom: 8px; border-radius: 10px;
+            border: none; font-family: inherit; font-size: 14px; outline: none;
+        }
+
+        button#addBtn {
+            width: 100%; padding: 14px; background: #fdcb6e; border: none;
+            border-radius: 12px; font-weight: 800; cursor: pointer; font-family: inherit;
+        }
+
+        .card { 
+            background: var(--card-bg); border-radius: 15px; padding: 15px; margin-bottom: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); position: relative;
+        }
+        .card.urgent { border-left: 5px solid var(--danger); }
+        .card.normal { border-left: 5px solid var(--success); }
+
+        .status-dot { font-size: 10px; font-weight: 800; display: inline-block; margin-top: 5px; padding: 2px 8px; border-radius: 20px; }
+        .status-dot.red { background: rgba(255, 118, 117, 0.1); color: var(--danger); }
+        .status-dot.green { background: rgba(85, 239, 196, 0.1); color: #00b894; }
+
+        #calendar-container { background: var(--card-bg); padding: 10px; border-radius: 20px; width: 100%; }
+        .fc .fc-toolbar-title { font-size: 14px !important; font-weight: 800; color: var(--accent); }
+        .fc .fc-daygrid-day { cursor: pointer; }
+        .fc .fc-day-today { background: rgba(108, 92, 231, 0.05) !important; }
+
+        .notes-container {
+            background: var(--glass); border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px); border-radius: 20px; height: 300px;
+        }
+        textarea#personalNotes {
+            width: 100%; height: 100%; background: transparent; 
+            color: var(--text-main); border: none; padding: 20px;
+            font-size: 15px; font-family: inherit; outline: none; resize: none;
+        }
+
+        .nav-bar {
+            position: fixed; bottom: 20px; display: flex; background: var(--nav-bg);
+            padding: 5px; border-radius: 15px; gap: 5px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        .nav-item { padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: 800; color: var(--text-sub); font-size: 11px; }
+        .nav-item.active { background: var(--accent); color: white; }
+    </style>
+</head>
+<body data-theme="light">
+
+    <div id="hug-overlay">
+        <div style="font-size: 70px; margin-bottom: 20px;">❤️</div>
+        <h1 style="color: white; font-weight: 800; font-size: 22px; margin: 0; line-height: 1.4;">КОТИЧКА,<br>Я ТЕБЯ ЛЮБЛЮ!</h1>
+    </div>
+
+    <div class="container">
+        <div class="top-bar">
+            <button class="icon-btn hug-btn-small" onclick="sendHug()">🤗</button>
+            <button class="icon-btn" onclick="toggleTheme()">🌓</button>
+        </div>
+
+        <div class="header">
+            <h1>Для моей самой лучшей ❤️</h1>
+            <p id="quoteDisplay"></p>
+        </div>
+
+        <div class="quick-links">
+            <a href="https://els.surgpu.ru" target="_blank" class="link-btn">ПОРТАЛ</a>
+            <a href="https://surgpu.ru/raspisanie/" target="_blank" class="link-btn">РАСПИСАНИЕ</a>
+        </div>
+
+        <div id="tab-list" class="tab-content active">
+            <div class="input-group">
+                <input type="text" id="taskName" placeholder="Что сделать, котичка?">
+                <input type="date" id="taskDate">
+                <button id="addBtn" onclick="saveTask()">Добавить в план</button>
+            </div>
+            <div id="taskList"></div>
+        </div>
+
+        <div id="tab-calendar" class="tab-content">
+            <div id="calendar-container">
+                <div id="calendar"></div>
+            </div>
+        </div>
+
+        <div id="tab-notes" class="tab-content">
+            <div class="notes-container">
+                <textarea id="personalNotes" placeholder="Твои мысли, солнышко..." oninput="syncNotes()"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-bar">
+        <div class="nav-item active" id="nav-list" onclick="switchTab('list', this)">СПИСОК</div>
+        <div class="nav-item" id="nav-calendar" onclick="switchTab('calendar', this)">КАЛЕНДАРЬ</div>
+        <div class="nav-item" id="nav-notes" onclick="switchTab('notes', this)">ЗАМЕТКИ</div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCY3UwViVWCdIyv7vhWCXFr5CSQaagLY-c",
+            authDomain: "for-my-love-dccfc.firebaseapp.com",
+            databaseURL: "https://for-my-love-dccfc-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "for-my-love-dccfc",
+            storageBucket: "for-my-love-dccfc.firebasestorage.app",
+            messagingSenderId: "544993866874",
+            appId: "1:544993866874:web:38cce21b18d48ed4f137c3"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        let calendar;
+
+        const MOTIVATION = ["Ты всё успеешь, котичка! ✨", "Горжусь тобой, солнышко ❤️", "Самая умная, мой грибочек 🥰"];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initCalendar();
+            listenData();
+            setRandomQuote();
+            if(localStorage.getItem('theme') === 'dark') document.body.setAttribute('data-theme', 'dark');
+        });
+
+        function listenData() {
+            db.ref('tasks').on('value', (s) => {
+                const tasks = Object.entries(s.val() || {}).map(([key, val]) => ({...val, firebaseKey: key}));
+                updateUI(tasks);
+                updateCalendar(tasks);
+            });
+            db.ref('notes').on('value', (s) => { document.getElementById('personalNotes').value = s.val() || ""; });
+            db.ref('hug').on('value', (s) => {
+                const d = s.val();
+                if (d && d.timestamp > Date.now() - 3000) showHugEffect();
+            });
+        }
+
+        function sendHug() { db.ref('hug').set({ timestamp: Date.now() }); }
+        
+        function showHugEffect() {
+            const o = document.getElementById('hug-overlay');
+            o.style.display = 'flex';
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            setTimeout(() => { o.style.display = 'none'; }, 3000);
+        }
+
+        function saveTask() {
+            const n = document.getElementById('taskName'), d = document.getElementById('taskDate');
+            if (n.value && d.value) {
+                db.ref('tasks').push({ name: n.value, date: d.value });
+                n.value = ''; d.value = '';
+            }
+        }
+
+        function removeTask(key) {
+            confetti({ particleCount: 50, spread: 50 });
+            db.ref('tasks/' + key).remove();
+        }
+
+        function syncNotes() { db.ref('notes').set(document.getElementById('personalNotes').value); }
+
+        function updateUI(tasks) {
+            const list = document.getElementById('taskList');
+            list.innerHTML = '';
+            
+            // Получаем сегодняшнюю дату без времени для сравнения
+            const today = new Date();
+            today.setHours(0,0,0,0);
+
+            tasks.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(t => {
+                const taskDate = new Date(t.date);
+                taskDate.setHours(0,0,0,0);
+                
+                const diffTime = taskDate - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                const isUrgent = diffDays <= 3;
+                const card = document.createElement('div');
+                card.className = `card ${isUrgent ? 'urgent' : 'normal'}`;
+                card.id = `task-${t.date}`;
+                card.innerHTML = `<span style="position:absolute;top:10px;right:10px;cursor:pointer;font-size:20px;color:#dfe6e9" onclick="removeTask('${t.firebaseKey}')">✓</span>
+                    <h3 style="margin:0; font-size:0.95em;">${t.name}</h3>
+                    <div style="font-size:11px;color:var(--text-sub);margin-top:4px;">📅 ${new Date(t.date).toLocaleDateString()}</div>
+                    <div class="status-dot ${isUrgent ? 'red' : 'green'}">${isUrgent ? '🔥 Срочно' : '☕ Время есть'}</div>`;
+                list.appendChild(card);
+            });
+        }
+
+        function initCalendar() {
+            const calendarEl = document.getElementById('calendar');
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'ru',
+                firstDay: 1,
+                height: 'auto',
+                headerToolbar: { left: 'prev', center: 'title', right: 'next' },
+                // В 6 версии Global плагины подключать не нужно через plugins: []
+                dateClick: function(info) {
+                    switchTab('list', document.getElementById('nav-list'));
+                    document.getElementById('taskDate').value = info.dateStr;
+                    const target = document.getElementById(`task-${info.dateStr}`);
+                    if(target) target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+            calendar.render();
+        }
+
+        function updateCalendar(tasks) {
+            calendar.removeAllEvents();
+            // Группируем задачи по датам, чтобы не плодить лишние точки
+            const uniqueDates = [...new Set(tasks.map(t => t.date))];
+            calendar.addEvents(uniqueDates.map(date => ({ 
+                start: date, 
+                display: 'block',
+                backgroundColor: '#6c5ce7',
+                borderColor: 'transparent',
+                allDay: true
+            })));
+        }
+
+        function switchTab(name, el) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+            el.classList.add('active');
+            if(name === 'calendar') {
+                setTimeout(() => { calendar.updateSize(); }, 50);
+            }
+        }
+
+        function toggleTheme() {
+            const m = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', m);
+            localStorage.setItem('theme', m);
+            if(calendar) calendar.render();
+        }
+
+        function setRandomQuote() {
+            document.getElementById('quoteDisplay').innerText = MOTIVATION[Math.floor(Math.random() * MOTIVATION.length)];
+        }
+    </script>
+</body>
+</html>
