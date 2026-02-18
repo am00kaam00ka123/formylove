@@ -55,6 +55,13 @@
             font-size: 1.2em; backdrop-filter: blur(5px); transition: 0.2s;
         }
 
+        /* Фикс для заезда года */
+        .fc-toolbar-title { 
+            white-space: nowrap !important; 
+            font-size: 1.1em !important; 
+            font-weight: 800; 
+        }
+
         #hug-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(15px);
@@ -64,11 +71,9 @@
 
         .header { text-align: center; color: white; margin-bottom: 20px; }
         .header h1 { font-size: 1.3em; margin: 0; font-weight: 800; }
-        #quoteDisplay { font-size: 0.8em; margin-top: 8px; opacity: 0.9; font-style: italic; }
 
         .tab-content { display: none; width: 100%; }
         .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .input-group {
             background: var(--glass); backdrop-filter: blur(10px); padding: 15px;
@@ -88,12 +93,6 @@
         .card { 
             background: var(--card-bg); border-radius: 15px; padding: 15px; margin-bottom: 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05); position: relative;
-            transition: 0.3s;
-        }
-
-        .message-card {
-            background: var(--card-bg); padding: 12px; border-radius: 15px;
-            margin-bottom: 10px; border-bottom: 3px solid var(--accent);
         }
 
         #calendar-container { background: var(--card-bg); padding: 10px; border-radius: 20px; width: 100%; }
@@ -103,8 +102,13 @@
             padding: 5px; border-radius: 15px; gap: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             z-index: 1000; width: 92%; max-width: 380px;
         }
-        .nav-item { flex: 1; padding: 10px 5px; border-radius: 10px; cursor: pointer; font-weight: 800; color: var(--text-sub); font-size: 9px; text-align: center; }
+        .nav-item { flex: 1; padding: 12px 5px; border-radius: 10px; cursor: pointer; font-weight: 800; color: var(--text-sub); font-size: 10px; text-align: center; }
         .nav-item.active { background: var(--accent); color: white; }
+
+        .reset-date {
+            text-align: center; font-size: 11px; color: var(--accent);
+            margin-top: 10px; cursor: pointer; font-weight: 600; text-decoration: underline;
+        }
     </style>
 </head>
 <body data-theme="light">
@@ -122,7 +126,7 @@
 
         <div class="header">
             <h1>Для моей самой лучшей ❤️</h1>
-            <p id="quoteDisplay"></p>
+            <p id="quoteDisplay" style="font-size: 0.8em; margin-top: 8px; color: white; opacity: 0.9;"></p>
         </div>
 
         <div id="tab-list" class="tab-content active">
@@ -130,6 +134,7 @@
                 <input type="text" id="taskName" placeholder="Что сделать, котичка?">
                 <input type="date" id="taskDate">
                 <button class="action-btn" onclick="saveTask()">Добавить в план</button>
+                <div id="selectedDateLabel" style="display:none; font-size: 10px; margin-top: 8px; color: var(--accent);">Выбрана дата из календаря</div>
             </div>
             <div id="taskList"></div>
         </div>
@@ -138,6 +143,7 @@
             <div id="calendar-container">
                 <div id="calendar"></div>
             </div>
+            <div class="reset-date" onclick="resetSelectedDate()">Сбросить выбор даты</div>
         </div>
 
         <div id="tab-archive" class="tab-content">
@@ -150,7 +156,7 @@
 
         <div id="tab-notes" class="tab-content">
             <div style="background: var(--glass); border-radius: 20px; height: 350px; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px);">
-                <textarea id="personalNotes" placeholder="Твои мысли, солнышко..." style="height: 100%; background: transparent; color: var(--text-main); padding: 20px;" oninput="syncNotes()"></textarea>
+                <textarea id="personalNotes" placeholder="Твои мысли, солнышко..." style="height: 100%; background: transparent; color: var(--text-main); padding: 20px; width: 100%; border: none; outline: none; font-family: inherit;" oninput="syncNotes()"></textarea>
             </div>
         </div>
     </div>
@@ -225,20 +231,12 @@
             `).join('');
         }
 
-        function sendHug() { db.ref('hug').set({ timestamp: Date.now() }); }
-        
-        function showHugEffect() {
-            const o = document.getElementById('hug-overlay');
-            o.style.display = 'flex';
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-            setTimeout(() => { o.style.display = 'none'; }, 3000);
-        }
-
         function saveTask() {
             const n = document.getElementById('taskName'), d = document.getElementById('taskDate');
             if (n.value && d.value) {
                 db.ref('tasks').push({ name: n.value, date: d.value });
                 n.value = ''; d.value = '';
+                resetSelectedDate();
             }
         }
 
@@ -259,39 +257,37 @@
         }
 
         function initCalendar() {
-            const calendarEl = document.getElementById('calendar');
-            // В FullCalendar 6 Global Bundle клик работает автоматически, но 
-            // важно убедиться, что DOM готов.
-            calendar = new FullCalendar.Calendar(calendarEl, {
+            calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                 initialView: 'dayGridMonth',
                 locale: 'ru',
                 firstDay: 1,
                 height: 'auto',
                 headerToolbar: { left: 'prev', center: 'title', right: 'next' },
-                // Этот параметр КРИТИЧЕСКИ важен для реакции на клик
-                navLinks: true, 
                 dateClick: function(info) {
-                    console.log("Клик по дате: " + info.dateStr); // Для отладки
-                    
-                    // 1. Переключаем вкладку на "ПЛАНЫ"
-                    const navPlans = document.getElementById('nav-list');
-                    switchTab('list', navPlans);
-                    
-                    // 2. Устанавливаем дату в инпут
+                    // Клик по дате: переход и подстановка
                     document.getElementById('taskDate').value = info.dateStr;
+                    document.getElementById('selectedDateLabel').style.display = 'block';
                     
-                    // 3. Скроллим к задачам этой даты
+                    // Переключаем вкладку программно
+                    switchTab('list', document.getElementById('nav-list'));
+                    
                     setTimeout(() => {
                         const target = document.querySelector(`.date-group-${info.dateStr}`);
                         if (target) {
                             target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            target.style.transition = "0.5s";
                             target.style.boxShadow = "0 0 20px #6c5ce7";
                             setTimeout(() => target.style.boxShadow = "", 2000);
                         }
-                    }, 150);
+                    }, 300);
                 }
             });
             calendar.render();
+        }
+
+        function resetSelectedDate() {
+            document.getElementById('taskDate').value = "";
+            document.getElementById('selectedDateLabel').style.display = 'none';
         }
 
         function updateCalendar(tasks) {
@@ -317,20 +313,23 @@
             document.getElementById('tab-' + name).classList.add('active');
             el.classList.add('active');
             if(name === 'calendar') {
-                setTimeout(() => { 
-                    calendar.updateSize();
-                    calendar.render(); // Перерисовываем принудительно
-                }, 50);
+                setTimeout(() => { calendar.updateSize(); }, 100);
             }
         }
 
+        function sendHug() { db.ref('hug').set({ timestamp: Date.now() }); }
+        function showHugEffect() {
+            const o = document.getElementById('hug-overlay');
+            o.style.display = 'flex';
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            setTimeout(() => { o.style.display = 'none'; }, 3000);
+        }
         function toggleTheme() {
             const m = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             document.body.setAttribute('data-theme', m);
             localStorage.setItem('theme', m);
             if(calendar) calendar.render();
         }
-
         function syncNotes() { db.ref('notes').set(document.getElementById('personalNotes').value); }
         function setRandomQuote() { document.getElementById('quoteDisplay').innerText = MOTIVATION[Math.floor(Math.random() * MOTIVATION.length)]; }
     </script>
